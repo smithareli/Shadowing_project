@@ -5,18 +5,17 @@ const getMarkedRange = (startDateStr, endDateStr, color = '#00adf5') => {
   let end = moment(endDateStr);
   let markedDates = {};
   
-  let current = start;
+  let current = start.clone();
   while (current.isBefore(end) || current.isSame(end)) {
     let dateString = current.format('YYYY-MM-DD');
     
-    let isStart = current.isSame(start);
-    let isEnd = current.isSame(end);
+    let isStart = current.isSame(start, 'day');
+    let isEnd = current.isSame(end, 'day');
 
     markedDates[dateString] = {
       startingDay: isStart,
       endingDay: isEnd,
-      selected: true,
-      selectedColor: color,
+      color,
       textColor: 'white',
     };
 
