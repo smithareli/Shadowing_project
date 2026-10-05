@@ -25,7 +25,7 @@ export default function Explore() {
         const markedRanges = json.dates.reduce(
           (marked: Record<string, unknown>, range: { start_date: string; end_date: string }) => ({
             ...marked,
-            ...getMarkedRange(range.start_date, range.end_date, '#f83156'),
+            ...getMarkedRange(range.start_date, range.end_date, '#D662B7'),
           }),
           {},
         );
@@ -38,48 +38,69 @@ export default function Explore() {
       });
   }, []);
   if (loading) {
-    return <ActivityIndicator style={styles.container} size="large" color="#0000ff" />;
+    return (
+      <View style={styles.screen}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Calendar</Text>
-      <Calendar
-        markingType="period"
-        onDayPress={(day) => setSelectedDate(day.dateString)}
-        markedDates={{
-          ...specialDates,
-          [selectedDate]: { selected: true, disableTouchEvent: true, selectedColor: '#50cebb', selectedTextColor: 'white' }
-          
-        }}
-        theme={{
-          todayTextColor: '#50cebb',
-          backgroundColor: '#f0f0f0',
-          calendarBackground: '#f0f0f0',
-          textSectionTitleColor: '#50cebb',
-          selectedDayBackgroundColor: '#50cebb',
-          selectedDayTextColor: 'white',
-          dayTextColor: '#000000',
-          arrowColor: '#50cebb',
-        }}
-      />
-      {selectedDate ? (<Text style={styles.dateText}> Selected Date:{selectedDate}</Text>) : null}
-      <Text>Selected Date: {selectedDate}</Text>
+    <View style={styles.screen}>
+      <View style={styles.container}>
+        <Text style={styles.header}>Calendar</Text>
+        <Calendar
+          onDayPress={(day) => setSelectedDate(day.dateString)}
+          markedDates={{
+            ...specialDates,
+            [selectedDate]: { selected: true, disableTouchEvent: true, selectedColor: '#50cebb', selectedTextColor: 'white' }
+          }}
+          theme={{
+            todayTextColor: '#50cebb',
+            backgroundColor: '#f0f0f0',
+            calendarBackground: '#f0f0f0',
+            textSectionTitleColor: '#000000',
+            selectedDayBackgroundColor: '#50cebb',
+            selectedDayTextColor: 'white',
+            dayTextColor: '#000000',
+            arrowColor: '#000000',
+          }}
+        />
+        {selectedDate ? (<Text style={styles.dateText}> Selected Date:{selectedDate}</Text>) : null}
+        <Text>Selected Date: {selectedDate}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: '#f0f0f0',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 12,
+    paddingTop: 100,
+  },
+  container: {
+    width: '90%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    paddingVertical: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    borderRadius: 8,
   },
   header: {
+    width: '100%',
+    textAlign: 'center',
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontWeight: 'normal',
+    marginBottom: 15,
   },
   dateText: {
     fontSize: 18,
