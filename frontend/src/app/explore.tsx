@@ -1,9 +1,11 @@
 import React, {useState} from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import getMarkedRange from "../components/ranged-dates";
 
 export default function Explore() {
   const [selectedDate, setSelectedDate] = useState('');
+  const specialDates = getMarkedRange('2026-10-01', '2026-10-07', '#f83156');
 
   return (
     <View style={styles.container}>
@@ -11,8 +13,9 @@ export default function Explore() {
       <Calendar
         onDayPress={(day) => setSelectedDate(day.dateString)}
         markedDates={{
+          ...specialDates,
           [selectedDate]: { selected: true, disableTouchEvent: true, selectedColor: '#50cebb', selectedTextColor: 'white' }
-
+          
         }}
         theme={{
           todayTextColor: '#50cebb',
