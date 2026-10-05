@@ -17,7 +17,8 @@ def pull_data():
                 
                 print(f"Successfully pulled {len(rows)} records:\n")
                 for row in rows:
-                    print(f"Start: {row['start_date']} | End: {row['end_date']}")                    
+                    print(f"Start: {row['start_date']} | End: {row['end_date']}")
+                return rows                    
     except Exception as error:
         print(f"Error while connecting to Neon: {error}")
 
