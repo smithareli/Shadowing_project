@@ -16,10 +16,9 @@ app.add_middleware(
 load_dotenv()
 client = genai.Client()
 
-interaction = client.interactions.create(
-    model="gemini-3.8-flash",
-    input="Explain how AI works in a few words"
-)
+#interaction = client.interactions.create(
+    #model="gemini-3.8-flash",
+    #input="Explain how AI works in a few words"
 def get_data():
     # Call the pull_data function and store the result in a variable
     rows = pull_data()
@@ -28,4 +27,3 @@ def get_data():
         "dates" : rows
     }
 get_data()
-print(interaction.output_text)

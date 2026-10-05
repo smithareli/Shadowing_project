@@ -15,7 +15,7 @@ def pull_data():
                 
                 rows = cur.fetchall()
                 
-                print(f"Successfully pulled {len(rows)} records:\n")
+                #print(f"Successfully pulled {len(rows)} records:\n")
                 for row in rows:
                     print(f"Start: {row['start_date']} | End: {row['end_date']}")
                 return rows                    
