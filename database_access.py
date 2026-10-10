@@ -7,17 +7,23 @@ from psycopg2.extras import RealDictCursor
 load_dotenv()
 def pull_data():
     with psycopg2.connect(os.getenv("DATABASE_URL")) as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT start_date, end_date FROM cycle;")
+        try:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("SELECT start_date, end_date FROM cycle;")
+                return cur.fetchall()
+        finally:
             conn.close()
-            return cur.fetchall()
+            
 def check_cycle():
     with psycopg2.connect(os.getenv("DATABASE_URL")) as conn:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute("SELECT COUNT(*) FROM cycle WHERE is_predicted = TRUE;")
+        try:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("SELECT COUNT(*) FROM cycle WHERE is_predicted = TRUE;")
+                num_predicted = cur.fetchone()["count"]
+                return (abs(num_predicted-2))
+        finally:
             conn.close()
-            num_predicted = cur.fetchone()["count"]
-            return (abs(num_predicted-2))
+        
 def add_new_cycle(start_date, end_date, current, predicted,created_at):
     with psycopg2.connect(os.getenv("DATABASE_URL")) as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
