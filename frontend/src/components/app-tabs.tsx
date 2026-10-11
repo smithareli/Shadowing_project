@@ -1,32 +1,58 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
-
-import { Colors } from '@/constants/theme';
+import { Tabs } from 'expo-router';
+import { Image } from 'react-native';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#555555',
+        tabBarStyle: {
+          backgroundColor: '#D9D9D9',
+          borderRadius: 100,
+          borderTopWidth: 0,
+          bottom: 16,
+          left: 16,
+          right: 16,
+          justifyContent: 'center',
+          height: 64,
+        },
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+          top: 13,
+        },
+      }}>
+      <Tabs.Screen name="index" options={{tabBarIcon: ({ color, size = 33 }) => (
+      <Image
+        source={require('@/assets/images/tabIcons/Home-page.png')}
+        style={{ width: size, height: size, tintColor: color }}
+        resizeMode="contain"
+      />
+    ),}} />
+      <Tabs.Screen name="insights" options={{tabBarIcon: ({ color, size = 33 }) => (
+      <Image
+        source={require('@/assets/images/tabIcons/Insights-page.png')}
+        style={{ width: size, height: size, tintColor: color }}
+        resizeMode="contain"
+      />
+    ),}} />
+      <Tabs.Screen name="explore" options={{tabBarIcon: ({ color, size = 33 }) => (
+      <Image
+        source={require('@/assets/images/tabIcons/Calendar-page.png')}
+        style={{ width: size, height: size, tintColor: color }}
+        resizeMode="contain"
+      />
+    ),}} />
+      <Tabs.Screen name="profile" options={{tabBarIcon: ({ color, size = 33 }) => (
+      <Image
+        source={require('@/assets/images/tabIcons/Profile-page.png')}
+        style={{ width: size, height: size, tintColor: color }}
+        resizeMode="contain"
+      />
+    ),}} />
+    </Tabs>
   );
 }
