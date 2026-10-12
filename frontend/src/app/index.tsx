@@ -2,6 +2,7 @@ import React from 'react';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { StyleSheet } from 'react-native';
+import DailyPhase from '@/components/Daily-phase';
 
 export default function HomeScreen() {
   return (
@@ -14,6 +15,7 @@ export default function HomeScreen() {
               Here's today's schedule.
             </ThemedText>
           </ThemedView>
+          <DailyPhase phase="Luteal" />
     </ThemedView>
   );
 }
@@ -21,7 +23,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
         padding: 20,
         backgroundColor: '#f0f0f0',
