@@ -39,3 +39,10 @@ def add_new_cycle(start_date, end_date, current, predicted, created_at):
                VALUES (NULL, %s, %s, NULL, NULL, %s, %s, %s);""",
             (start_date, end_date, predicted, current, created_at),
         )
+def add_daily_insight(phase, symptom=None, Reccommendations=None, Tips=None, Task_ids=None):
+    with get_cursor() as cur:
+        cur.execute(
+            """INSERT INTO 'Daily Insights' (Symptoms, Recommendations, Tips, Task_ids, phase)
+               VALUES (%s, %s, %s, %s, %s);""",
+            (symptom, Reccommendations, Tips, Task_ids, phase),
+        )
