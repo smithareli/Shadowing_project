@@ -39,10 +39,21 @@ def add_new_cycle(start_date, end_date, current, predicted, created_at):
                VALUES (NULL, %s, %s, NULL, NULL, %s, %s, %s);""",
             (start_date, end_date, predicted, current, created_at),
         )
-def add_daily_insight(phase, symptom=None, Reccommendations=None, Tips=None, Task_ids=None):
+def add_daily_insight(phase, created_at, symptom=None, Tips=None, Reccommendations=None, Task_ids=None):
     with get_cursor() as cur:
         cur.execute(
-            """INSERT INTO 'Daily Insights' (Symptoms, Recommendations, Tips, Task_ids, phase)
-               VALUES (%s, %s, %s, %s, %s);""",
-            (symptom, Reccommendations, Tips, Task_ids, phase),
+            """INSERT INTO 'Daily Insights' (Symptoms, Recommendations, Tips, Task_ids, phase, daily_date)
+               VALUES (%s, %s, %s, %s, %s, %s);""",
+            (symptom, Reccommendations, Tips, Task_ids, phase, created_at),
         )
+def get_daily_insight():
+    with get_cursor() as cur:
+        cur.execute("SELECT * FROM 'Daily Insights';")
+        return cur.fetchall()
+def check_daily_insight():
+    with get_cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM 'Daily Insights' WHERE 'daily_date' = CURRENT_DATE;")
+        num_insights = cur.fetchone()["count"]
+        if num_insights==0:
+            return False
+        return True

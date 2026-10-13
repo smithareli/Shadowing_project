@@ -1,7 +1,7 @@
 import json
 from dotenv import load_dotenv
-from database_access import pull_data, check_cycle, add_new_cycle, add_daily_insight
-from gemini_calls import predict_next_cycles
+from database_access import pull_data, check_cycle, check_daily_insight, get_daily_insight
+from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
@@ -42,7 +42,15 @@ def get_data():
     predicted = check_cycle()
     if predicted>0:
         rows = predict_next_cycles(rows, predicted)
+    daily_insights = get_daily_insight()
+    
+    #check if there is a daily insight
+    if not check_daily_insight():
+        predict_daily_insights(rows)
+        daily_insights = get_daily_insight()
+
+    
 
 
     
-    return {"dates": rows}
+    return {"dates": rows , "phase": daily_insights[0]["phase"] }
