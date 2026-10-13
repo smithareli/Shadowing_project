@@ -94,8 +94,8 @@ def predict_daily_insights(rows):
                     },
                 },
             )
-    daily_insight=json.loads(interaction.output[0].content)
-    for insight in daily_insight:
+    daily_insight = json.loads(interaction.output_text)
+    for insight in daily_insight["insights"]:
         add_daily_insight(
             phase=insight["phase"],
             created_at=insight["created_at"],
