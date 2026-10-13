@@ -3,7 +3,7 @@ import json
 from dotenv import load_dotenv
 from google import genai
 
-from database_access import add_new_cycle, pull_data, add_daily_insight
+from database_access import add_new_cycle, pull_data, add_daily_insight, get_current_date
 load_dotenv()
 
 client = genai.Client()
@@ -50,13 +50,15 @@ def predict_next_cycles(rows, predicted):
     rows = pull_data()
     return rows
 def predict_daily_insights(rows):
+    insight_date = get_current_date()
     interaction = client.interactions.create(
                 model="gemini-3.8-flash",
                 input=(
-                    f"Predict the next daily insights using this data: {rows}\n"
+                    f"Generate exactly one daily insight for {insight_date} using this data: {rows}\n"
                     "For the daily insight, phase refers to the current phase in the menstrual cycle.\n"
                     "Symptoms should be a list of 3 symptoms associated with that phase.\n"
-                    "Tips should be a list of 4 tips associated with that phase."
+                    "Tips should be a list of 4 tips associated with that phase.\n"
+                    "Do not generate insights for any other date."
                 ),
                 response_format={
                     "type": "text",
@@ -64,42 +66,35 @@ def predict_daily_insights(rows):
                     "schema": {
                         "type": "object",
                         "properties": {
-                            "insights": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "phase": {"type": "string"},
-                                        "created_at": {"type": "string"},
-                                        "symptoms": {
-                                            "type": "array",
-                                            "items": {"type": "string"},
-                                            "minItems": 3,
-                                            "maxItems": 3,
-                                        },
-                                        "tips": {
-                                            "type": "array",
-                                            "items": {"type": "string"},
-                                            "minItems": 4,
-                                            "maxItems": 4,
-                                        },
-                                        
-                                        
+                            "insight": {
+                                "type": "object",
+                                "properties": {
+                                    "phase": {"type": "string"},
+                                    "symptoms": {
+                                        "type": "array",
+                                        "items": {"type": "string"},
+                                        "minItems": 3,
+                                        "maxItems": 3,
                                     },
-                                    "required": ["phase", "created_at", "symptoms", "tips"]
+                                    "tips": {
+                                        "type": "array",
+                                        "items": {"type": "string"},
+                                        "minItems": 4,
+                                        "maxItems": 4,
+                                    },
                                 },
+                                "required": ["phase", "symptoms", "tips"],
                             }
                         },
-                        "required": ["insights"],
+                        "required": ["insight"],
                     },
                 },
             )
     daily_insight = json.loads(interaction.output_text)
-    for insight in daily_insight["insights"]:
-        add_daily_insight(
-            phase=insight["phase"],
-            created_at=insight["created_at"],
-            symptom=insight["symptoms"],
-            Tips=insight["tips"],
-        )
+    insight = daily_insight["insight"]
+    add_daily_insight(
+        phase=insight["phase"],
+        symptom=insight["symptoms"],
+        Tips=insight["tips"],
+    )
     return "success"
