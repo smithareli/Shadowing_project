@@ -1,23 +1,39 @@
 import moment from 'moment';
 
-const getMarkedRange = (startDateStr, endDateStr, color = '#D662B7') => {
-  let start = moment(startDateStr);
-  let end = moment(endDateStr);
-  let markedDates = {};
-  
-  let current = start.clone();
-  while (current.isBefore(end) || current.isSame(end)) {
-    let dateString = current.format('YYYY-MM-DD');
+const CURRENT_COLOR = '#D662B7';
+const PREDICTED_COLOR = '#EBB0DC'; 
+const getMarkedRange = (startDateStr, endDateStr, color = CURRENT_COLOR) => {
+  const end = moment(endDateStr);
+  const current = moment(startDateStr);
+  const markedDates = {};
 
-    markedDates[dateString] = {
+  while (current.isSameOrBefore(end)) {
+    markedDates[current.format('YYYY-MM-DD')] = {
       selected: true,
       selectedColor: color,
-      textColor: 'white',
+      selectedTextColor: 'white', 
     };
-
-    current = current.add(1, 'day');
+    current.add(1, 'day');
   }
-  
+
   return markedDates;
 };
+
+export const toMarkedDates = (cycles) =>
+  cycles.reduce(
+    (marked, c) => ({
+      ...marked,
+      ...getMarkedRange(c.start_date, c.end_date, c.is_predicted ? PREDICTED_COLOR : CURRENT_COLOR),
+    }),
+    {},
+  );
+
+export const toDraftMarkedDates = (days) =>
+  Object.fromEntries(
+    [...days].map((day) => [
+      day,
+      { selected: true, selectedColor: CURRENT_COLOR, selectedTextColor: 'white' },
+    ]),
+  );
+
 export default getMarkedRange;

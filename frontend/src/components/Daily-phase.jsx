@@ -40,7 +40,7 @@ const DailyPhase = ({phase}) => {
     const router = useRouter();
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Looks like your in your {phase} phase</Text>
+            <Text style={styles.text}>Looks like your in your {phase}</Text>
             <Text style={styles.subtext}>Find out what that means for today</Text>
             <Pressable style={styles.button} onPress={()=> router.push('/insights')}>
                 <Image source={require('@/assets/images/tabIcons/Insights-page.png')} style={{ width: 33, height: 33 }} resizeMode="contain" />

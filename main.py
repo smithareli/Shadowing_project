@@ -1,8 +1,13 @@
 import json
 from dotenv import load_dotenv
-from database_access import pull_data, check_cycle, check_daily_insight, get_daily_insight
+from datetime import date
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from database_access import (
+    pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
+    replace_current_cycle, delete_todays_insight,
+)
 from gemini_calls import predict_next_cycles, predict_daily_insights
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 import os
@@ -20,37 +25,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 load_dotenv()
+def build_response():
+    cycles = pull_data()
+    needed = check_cycle()
+    if needed > 0:
+        predict_next_cycles(pull_history(), needed)
+        cycles = pull_data()  
+
+    if not check_daily_insight():
+        predict_daily_insights(cycles)
+
+    insights = get_daily_insight()
+    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None}
+class CurrentCycleIn(BaseModel):
+    dates: list[date]
+@app.put("/current-cycle")
+def update_current_cycle(body: CurrentCycleIn):
+    if not body.dates:
+        raise HTTPException(status_code=400, detail="Select at least one date")
+    replace_current_cycle(min(body.dates), max(body.dates))
+    delete_todays_insight()
+    return build_response()
+
 
 @app.get("/")
-# def reset_cycle_id():
-#     with psycopg2.connect(os.getenv("DATABASE_URL")) as conn:
-#         try:
-#             with conn:
-#                 with conn.cursor() as cur:
-#                     cur.execute("""
-#                         SELECT setval(
-#                         pg_get_serial_sequence('cycle', 'id'),
-#                         COALESCE((SELECT MAX(id) FROM cycle), 0) + 1,
-#                         false
-#                         );
-#                     """)
-#                     print(cur.fetchone())
-#         finally:
-#             conn.close()
 def get_data():
-    rows = pull_data()
-    predicted = check_cycle()
-    if predicted>0:
-        rows = predict_next_cycles(rows, predicted)
-    daily_insights = get_daily_insight()
-    
-    #check if there is a daily insight
-    if not check_daily_insight():
-        predict_daily_insights(rows)
-        daily_insights = get_daily_insight()
-
-    
-
-
-    
-    return {"dates": rows , "phase": daily_insights[0]["phase"] }
+    return build_response()

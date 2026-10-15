@@ -20,9 +20,22 @@ def get_cursor():
 
 def pull_data():
     with get_cursor() as cur:
-        cur.execute("SELECT start_date, end_date FROM cycle;")
+        cur.execute("SELECT start_date, end_date, is_current, is_predicted FROM cycle ORDER BY start_date;")
         return cur.fetchall()
-
+def pull_history():
+    with get_cursor() as cur:
+        cur.execute("SELECT start_date, end_date, is_current, is_predicted FROM cycle WHERE is_predicted = FALSE ORDER BY start_date;")
+        return cur.fetchall()
+def replace_current_cycle(start, end):
+    with get_cursor() as cur:
+        cur.execute("DELETE FROM cycle WHERE is_predicted = TRUE;")
+        cur.execute("DELETE FROM CYCLE WHERE is_current=TRUE;")
+        cur.execute(
+                    """INSERT INTO cycle (user_id, start_date, end_date, ovulation_phase_sd,
+                                        luteal_phase_sd, is_predicted, is_current, created_at)
+                    VALUES (NULL, %s, %s, NULL, NULL, FALSE, TRUE, now());""",
+                    (start, end),
+                )
 
 def check_cycle():
     with get_cursor() as cur:
@@ -66,7 +79,9 @@ def get_daily_insight():
                LIMIT 1;"""
         )
         return cur.fetchall()
-
+def delete_todays_insight():
+    with get_cursor() as cur:
+        cur.execute("DELETE FROM daily_insights WHERE daily_date = CURRENT_DATE;")
 
 def check_daily_insight():
     with get_cursor() as cur:
