@@ -42,10 +42,13 @@ export function useCycleEdit(cycles: Cycle[], backendUrl: string, onSaved: (cycl
            const res = await fetch(`${backendUrl}/current-cycle`, { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cycles: [...draft] }),
+            body: JSON.stringify({ dates: [...draft] }),
            });
            if(!res.ok) throw new Error(`HTTP ${res.status}`);
-           const json = await res.json();
+           const json: { cycles?: Cycle[] } = await res.json();
+           if (!Array.isArray(json.cycles)) {
+             throw new Error('Backend response must contain a cycles array.');
+           }
            onSaved(json.cycles);
            setEditMode(false);
         } catch (error) {
