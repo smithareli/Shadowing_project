@@ -3,11 +3,16 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import DailyPhase from '@/components/Daily-phase';
+import TaskUI from '@/components/task_ui';
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [phase, setPhase] = useState<string | null>(null);
-
+  const tasks = [
+    { taskId: '1', title: 'Task 1', description: 'Description 1', startTime: '09:00 AM', endTime: '10:00 AM' },
+    { taskId: '2', title: 'Task 2', description: 'Description 2', startTime: '10:30 AM', endTime: '11:30 AM' },
+    { taskId: '3', title: 'Task 3', description: 'Description 3', startTime: '01:00 PM', endTime: '02:00 PM' },
+  ];
   useEffect(() => {
     const backendUrl = 'https://shadowing-project.onrender.com';
 
@@ -49,6 +54,16 @@ export default function HomeScreen() {
             </ThemedText>
           </ThemedView>
           {phase && <DailyPhase phase={phase} />}
+          {tasks.map((task) => (
+            <TaskUI
+              key={task.taskId}
+              taskId={task.taskId}
+              title={task.title}
+              description={task.description}
+              startTime={task.startTime}
+              endTime={task.endTime}
+            />
+          ))}
     </ThemedView>
   );
 }
