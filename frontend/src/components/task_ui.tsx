@@ -1,5 +1,5 @@
-import React from "react";
-import { Switch, View, Text, StyleSheet } from "react-native";
+import React, {useState} from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 type TaskProps = {
     taskId: string;
     title: string;
@@ -9,15 +9,22 @@ type TaskProps = {
 };
 export default function TaskUI({ taskId, title, description, startTime, endTime }: TaskProps) {
     const [isEnabled, setIsEnabled] = React.useState(false);
-    const toggleSwitch = () => setIsEnabled(previousState => !previousState);
     return (
         <View style={styles.taskContainer}>
-            <Switch
-                trackColor={{ false: "#767577", true: "#81b0ff" }}
-                thumbColor={isEnabled ? "#f5dd9d" : "#f4f3f4"}
-                onValueChange={toggleSwitch}
-                value={isEnabled}
-            />
+            <TouchableOpacity 
+                style={styles.radioContainer} 
+                onPress={() => setIsEnabled(!isEnabled)}
+                activeOpacity={0.8}
+                accessible={true}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: isEnabled }}
+            >
+                {/* Outer Circle */}
+                <View style={[styles.outerCircle, isEnabled && styles.outerCircleSelected]}>
+                {/* Inner Circle (Visible only when selected) */}
+                {isEnabled && <View style={styles.innerCircle} />}
+                </View>
+            </TouchableOpacity>
             <View style={styles.rows}>
                 <Text style={styles.taskTitle}>{title}</Text>
                 <Text style={styles.taskTime}>{startTime} - {endTime}</Text>
@@ -33,6 +40,29 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "#ccc",
         flexDirection: "row",
+    },
+    radioContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 10,
+    },
+    outerCircle: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: "#007AFF",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    outerCircleSelected: {
+        borderColor: "#007AFF",
+    },
+    innerCircle: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: "#007AFF",
     },
     taskTitle: {
         fontSize: 16,
