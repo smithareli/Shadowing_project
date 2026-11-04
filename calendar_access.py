@@ -3,32 +3,26 @@ import os
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from database_access import get_current_date
 
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
-def get_calendar_events():
-    creds = None
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+TOKEN_PATH = "/etc/secrets/token.json"
+if not os.path.exists(TOKEN_PATH):
+    TOKEN_PATH = "token.json"  # local development
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+def get_credentials():
+    creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+    if not creds.valid:
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())  
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
-            creds = flow.run_local_server(
-                host="localhost",
-                port=8000,
-            )
-        with open("token.json", "w", encoding="utf-8") as token:
-            token.write(creds.to_json())
+            raise RuntimeError("Google token invalid; regenerate it locally.")
+    return creds
 
+def get_calendar_events():
+    creds = get_credentials()
     try:
         target_date = get_current_date()
         start_of_day =f"{target_date}T00:00:00Z"
