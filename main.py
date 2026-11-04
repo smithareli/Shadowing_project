@@ -51,3 +51,9 @@ def update_current_cycle(body: CurrentCycleIn):
 @app.get("/")
 def get_data():
     return build_response()
+
+@app.get("/google-calendar-events")
+def get_google_calendar_events():
+    from calendar_access import get_calendar_events
+    events = get_calendar_events()
+    return {"events": events}
