@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from database_access import get_current_date
-
+SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 TOKEN_PATH = "/etc/secrets/token.json"
 if not os.path.exists(TOKEN_PATH):
     TOKEN_PATH = "token.json"  # local development
