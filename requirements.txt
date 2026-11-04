@@ -3,3 +3,6 @@ uvicorn[standard]
 python-dotenv
 google-genai
 psycopg2-binary
+google-api-python-client
+google-auth
+google-auth-oauthlib
