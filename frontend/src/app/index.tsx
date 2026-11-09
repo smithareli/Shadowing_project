@@ -72,11 +72,11 @@ export default function HomeScreen() {
         if (Array.isArray(json.tasks)) {
           setTasks(
             json.tasks.map((task: any) => ({
-              taskId: task.task_id ?? task.taskId,
-              title: task.task_name ?? task.title,
-              description: task.task_description ?? task.description,
-              startTime: task.task_start_time ?? task.startTime ?? "",
-              endTime: task.task_end_time ?? task.endTime ?? "",
+              taskId: String(task.id),
+              title: task.name,
+              description: task.description ?? '',
+              startTime: task.start_time ?? '',
+              endTime: task.end_time ?? '',
             }))
           );
         }

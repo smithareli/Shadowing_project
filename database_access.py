@@ -97,5 +97,9 @@ def add_task(task_name, task_description, task_location, task_start_date, task_e
         )
 def get_tasks():
     with get_cursor() as cur:
-        cur.execute("SELECT * FROM task WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE;")
+        cur.execute("""
+            SELECT * FROM task
+            WHERE start_date <= (NOW() AT TIME ZONE 'America/New_York')::date
+            AND end_date   >= (NOW() AT TIME ZONE 'America/New_York')::date;
+        """)       
         return cur.fetchall()
