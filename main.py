@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from database_access import (
     pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
-    replace_current_cycle, delete_todays_insight,
+    replace_current_cycle, delete_todays_insight, get_tasks
 )
 from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +36,8 @@ def build_response():
         predict_daily_insights(cycles)
 
     insights = get_daily_insight()
-    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None}
+    tasks = get_tasks()
+    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None, "tasks": tasks}
 class CurrentCycleIn(BaseModel):
     dates: list[date]
 @app.put("/current-cycle")

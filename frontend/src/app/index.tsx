@@ -1,18 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, StyleSheet, View } from 'react-native';
 import DailyPhase from '@/components/Daily-phase';
 import TaskUI from '@/components/task_ui';
+type Task = {
+  taskId: string;
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+};
+
+type CalendarEvent = {
+  id: string;
+  summary?: string;
+  description?: string;
+  start?: { dateTime?: string; date?: string };
+  end?: { dateTime?: string; date?: string };
+}
 
 export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
+  const [calendarLoading, setCalendarLoading] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
-  const tasks = [
-    { taskId: '1', title: 'Task 1', description: 'Description 1', startTime: '09:00 AM', endTime: '10:00 AM' },
-    { taskId: '2', title: 'Task 2', description: 'Description 2', startTime: '10:30 AM', endTime: '11:30 AM' },
-    { taskId: '3', title: 'Task 3', description: 'Description 3', startTime: '01:00 PM', endTime: '02:00 PM' },
-  ];
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  const loadGoogleCalendarEvents = async () => {
+    setCalendarLoading(true);
+    try {
+      const response = await fetch('https://shadowing-project.onrender.com/google-calendar-events');
+      if (!response.ok) {
+        throw new Error(`Backend request failed with HTTP ${response.status}`);
+      }
+
+      const json: { events?: CalendarEvent[] } = await response.json();
+      if (!Array.isArray(json.events)) {
+        throw new Error('Backend response must contain an events array.');
+      }
+      /*
+      setTasks(json.events.map((event) => ({
+        taskId: event.id,
+        title: event.summary ?? '(Untitled event)',
+        description: event.description ?? '',
+        startTime: event.start?.dateTime ?? event.start?.date ?? '',
+        endTime: event.end?.dateTime ?? event.end?.date ?? '',
+      })));
+      */
+    } catch (error: unknown) {
+      console.error('Error fetching Google Calendar events:', error);
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
   useEffect(() => {
     const backendUrl = 'https://shadowing-project.onrender.com';
 
@@ -23,11 +64,22 @@ export default function HomeScreen() {
         }
         return response.json();
       })
-      .then((json: { phase?: unknown }) => {
+      .then((json: { phase?: unknown , tasks?: Task[] }) => {
         if (typeof json.phase !== 'string' || json.phase.trim().length === 0) {
           throw new Error('Backend response must contain a non-empty phase string.');
         }
         setPhase(json.phase);
+        if (Array.isArray(json.tasks)) {
+          setTasks(
+            json.tasks.map((task: any) => ({
+              taskId: task.task_id ?? task.taskId,
+              title: task.task_name ?? task.title,
+              description: task.task_description ?? task.description,
+              startTime: task.task_start_time ?? task.startTime ?? "",
+              endTime: task.task_end_time ?? task.endTime ?? "",
+            }))
+          );
+        }
         setLoading(false);
       })
       .catch((error: unknown) => {
@@ -54,6 +106,20 @@ export default function HomeScreen() {
             </ThemedText>
           </ThemedView>
           {phase && <DailyPhase phase={phase} />}
+          <ThemedView style={styles.tasks_container}>
+            <ThemedView  style={styles.task_header}>
+              <ThemedText type="title" style={styles.title}>
+                Tasks
+              </ThemedText>
+              <ThemedView style={styles.button_container}>
+              <Button
+                title={calendarLoading ? 'Loading Calendar...' : 'Google Calendar'}
+                color="#FDF4F2"     
+                disabled={calendarLoading}
+                onPress={loadGoogleCalendarEvents}
+              />
+              </ThemedView>
+            </ThemedView>
           {tasks.map((task) => (
             <TaskUI
               key={task.taskId}
@@ -64,6 +130,7 @@ export default function HomeScreen() {
               endTime={task.endTime}
             />
           ))}
+      </ThemedView>
     </ThemedView>
   );
 }
@@ -95,9 +162,28 @@ const styles = StyleSheet.create({
     title: {
         textAlign: 'center',
         color: '#000',
+        fontSize: 24,
     },
     code: {
         textTransform: 'uppercase',
         color: '#000',
+        fontSize: 16,
+    },
+    tasks_container: {
+        padding: 10,
+        backgroundColor: '#f0f0f0',
+        width: '90%',
+    },
+    task_header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+        backgroundColor:"#FDF4F2",
+    },
+    button_container: {
+        backgroundColor: '#1F092A',
+        borderRadius: 5,
+        padding: 5,
     },
 });

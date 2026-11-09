@@ -5,8 +5,8 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from database_access import add_task, get_current_date
 
-from database_access import get_current_date
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 TOKEN_PATH = "/etc/secrets/token.json"
 if not os.path.exists(TOKEN_PATH):
@@ -39,6 +39,19 @@ def get_calendar_events():
         ).execute()
 
         events = events_result.get("items", [])
+        for event in events:
+            start = event["start"].get("dateTime", event["start"].get("date"))
+            end = event["end"].get("dateTime", event["end"].get("date"))
+            add_task(
+                task_id=event.get("id"),
+                task_name=event.get("summary", "No Title"),
+                task_description=event.get("description", ""),
+                task_location=event.get("location", ""),
+                task_start_date=start.split("T")[0],
+                task_end_date=end.split("T")[0],
+                task_start_time=start.split("T")[1] if "T" in start else None,
+                task_end_time=end.split("T")[1] if "T" in end else None,
+            )
         return events
     except HttpError as error:
         print(f"Calendar API request failed: {error}")

@@ -88,3 +88,14 @@ def check_daily_insight():
         cur.execute("SELECT COUNT(*) FROM daily_insights WHERE daily_date = CURRENT_DATE;")
         num_insights = cur.fetchone()["count"]
         return num_insights > 0
+def add_task(task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time, task_id=None):
+    with get_cursor() as cur:
+        cur.execute(
+            """INSERT INTO tasks (task_id, task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
+            (task_id, task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time),
+        )
+def get_tasks():
+    with get_cursor() as cur:
+        cur.execute("SELECT * FROM tasks WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE;")
+        return cur.fetchall()
