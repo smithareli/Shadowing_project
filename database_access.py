@@ -91,11 +91,11 @@ def check_daily_insight():
 def add_task(task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time, task_id=None):
     with get_cursor() as cur:
         cur.execute(
-            """INSERT INTO tasks (task_id, task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time)
+            """INSERT INTO task (id, name, description, location, start_date, end_date, start_time, end_time)
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""",
             (task_id, task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time),
         )
 def get_tasks():
     with get_cursor() as cur:
-        cur.execute("SELECT * FROM tasks WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE;")
+        cur.execute("SELECT * FROM task WHERE start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE;")
         return cur.fetchall()
