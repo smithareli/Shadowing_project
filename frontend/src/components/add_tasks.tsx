@@ -10,6 +10,19 @@ type Props = {
     backendUrl:string;
     initialData?: any;
 };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_RE = /^([01]?\d|2[0-3]):([0-5]\d)$/;
+
+function toTimestamp(date: string, time: string): string | null {
+  if (!DATE_RE.test(date) || !TIME_RE.test(time)) return null;
+  const [h, m] = time.split(":");
+  const d = new Date(`${date}T${h.padStart(2, "0")}:${m}:00`); // parsed as device-local time
+  if (isNaN(d.getTime())) return null;
+  // reject rollovers like 2026-02-31
+  const [y, mo, day] = date.split("-").map(Number);
+  if (d.getFullYear() !== y || d.getMonth() + 1 !== mo || d.getDate() !== day) return null;
+  return d.toISOString();
+}
 export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, initialData}: Props) {
     //figure out how handle timezones later
     const [taskData, setTaskData] = useState(initialData || { title: "", description: "", startTime: "", endTime: "" , date: ""});
@@ -17,31 +30,43 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
     useEffect(() => {
         setTaskData(initialData || { title: "", description: "", startTime: "", endTime: "" , start_date: "", end_date: ""});
     }, [initialData]);
-    const submit= async (data: any) => {
-        if (!data.title || !data.startTime || !data.endTime || !data.start_date || !data.end_date) {
-            Alert.alert("Error", "Please fill in all fields.");
-            return;
-        }
+    const submit = async (data: any) => {
+        const title = data.title?.trim();
+        const start = toTimestamp(data.start_date, data.startTime);
+        const end = toTimestamp(data.end_date, data.endTime);
+
+        if (!title) return Alert.alert("Error", "Please enter a title.");
+        if (!start) return Alert.alert("Error", "Start date/time is invalid. Use YYYY-MM-DD and HH:MM (24-hour).");
+        if (!end) return Alert.alert("Error", "End date/time is invalid. Use YYYY-MM-DD and HH:MM (24-hour).");
+        if (new Date(end) < new Date(start)) return Alert.alert("Error", "End must be after the start.");
+
+        const payload = {
+            name: title,
+            description: data.description?.trim() ?? "",
+            location: data.location?.trim() || null,
+            start_date: data.start_date,
+            end_date: data.end_date,
+            start_time: start,
+            end_time: end,
+        };
+
         setIsSubmitting(true);
         try {
             const response = await fetch(`${backendUrl}/add-task`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
             });
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            const json = await response.json();
-            onSubmit(json);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            onSubmit(await response.json());
             onClose();
         } catch (error) {
-            console.error('Error submitting task:', error);
+            console.error("Error submitting task:", error);
             Alert.alert("Error", "Failed to submit task. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
-    };
+        };
     const handleSubmit = () => {
         submit(taskData);
     };

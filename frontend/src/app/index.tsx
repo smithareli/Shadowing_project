@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { ActivityIndicator, Button, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, Pressable, StyleSheet, View } from 'react-native';
 import DailyPhase from '@/components/Daily-phase';
 import TaskUI from '@/components/task_ui';
+import AddTaskModal from '@/components/add_tasks';
 type Task = {
   taskId: string;
   title: string;
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [addTaskModalVisible, setAddTaskModalVisible] = useState(false);
 
   const loadGoogleCalendarEvents = async () => {
     setCalendarLoading(true);
@@ -111,6 +113,7 @@ export default function HomeScreen() {
               <ThemedText type="title" style={styles.title}>
                 Tasks
               </ThemedText>
+
               <ThemedView style={styles.button_container}>
               <Button
                 title={calendarLoading ? 'Loading Calendar...' : 'Google Calendar'}
@@ -119,6 +122,11 @@ export default function HomeScreen() {
                 onPress={loadGoogleCalendarEvents}
               />
               </ThemedView>
+              <Pressable style={styles.button_container} onPress={() => setAddTaskModalVisible(true)}>
+                <ThemedText type="default" style={{ color: '#FDF4F2', textAlign: 'center' }}>
+                  Add Task
+                </ThemedText>
+              </Pressable>
             </ThemedView>
           {tasks.map((task) => (
             <TaskUI
@@ -130,6 +138,12 @@ export default function HomeScreen() {
               endTime={task.endTime}
             />
           ))}
+          <AddTaskModal
+            visible={addTaskModalVisible}
+            onClose={() => setAddTaskModalVisible(false)}
+            onSubmit={(data) => setTasks((currentTasks) => [...currentTasks, data])}
+            backendUrl="https://shadowing-project.onrender.com"
+          />
       </ThemedView>
     </ThemedView>
   );
