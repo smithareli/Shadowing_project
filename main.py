@@ -10,6 +10,8 @@ from database_access import (
 from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
+from calendar_access import get_calendar_events
+
 import os
 import psycopg2
 
@@ -48,6 +50,24 @@ def update_current_cycle(body: CurrentCycleIn):
     delete_todays_insight()
     return build_response()
 
+@app.put("/add-task")
+def add_task(body: dict):
+    required_fields = [ "task_name", "task_start_date", "task_end_date", "task_start_time", "task_end_time"]
+    for field in required_fields:
+        if field not in body:
+            raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+
+    add_task(
+        task_name=body["task_name"],
+        task_description=body["task_description"],
+        task_location=body["task_location"],
+        task_start_date=body["task_start_date"],
+        task_end_date=body["task_end_date"],
+        task_start_time=body["task_start_time"],
+        task_end_time=body["task_end_time"],
+    )
+    return build_response()
+
 
 @app.get("/")
 def get_data():
@@ -55,6 +75,5 @@ def get_data():
 
 @app.get("/google-calendar-events")
 def get_google_calendar_events():
-    from calendar_access import get_calendar_events
     events = get_calendar_events()
-    return {"events": events}
+    return {"events": events}, build_response()

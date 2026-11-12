@@ -7,24 +7,43 @@ type Props = {
     visible:boolean;
     onClose:()=>void;
     onSubmit: (data: any)=> void;
+    backendUrl:string;
     initialData?: any;
 };
-export default function AddTaskModal({visible, onClose, onSubmit, initialData}: Props) {
+export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, initialData}: Props) {
     //figure out how handle timezones later
     const [taskData, setTaskData] = useState(initialData || { title: "", description: "", startTime: "", endTime: "" , date: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     useEffect(() => {
-        setTaskData(initialData || { title: "", description: "", startTime: "", endTime: "" , date: ""});
+        setTaskData(initialData || { title: "", description: "", startTime: "", endTime: "" , start_date: "", end_date: ""});
     }, [initialData]);
-    const handleSubmit =() => {
-        if(!taskData.title || !taskData.description || !taskData.startTime || !taskData.endTime || !taskData.date){
+    const submit= async (data: any) => {
+        if (!data.title || !data.startTime || !data.endTime || !data.start_date || !data.end_date) {
             Alert.alert("Error", "Please fill in all fields.");
             return;
         }
         setIsSubmitting(true);
-        onSubmit(taskData);
-        setIsSubmitting(false);
-        onClose();
+        try {
+            const response = await fetch(`${backendUrl}/add-task`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const json = await response.json();
+            onSubmit(json);
+            onClose();
+        } catch (error) {
+            console.error('Error submitting task:', error);
+            Alert.alert("Error", "Failed to submit task. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    const handleSubmit = () => {
+        submit(taskData);
     };
     return (
         <Modal visible={visible} animationType="slide" transparent={true}>
@@ -40,9 +59,15 @@ export default function AddTaskModal({visible, onClose, onSubmit, initialData}: 
                         />
                         <TextInput
                             style={styles.input}
-                            placeholder="Date"
-                            value={taskData.date}
-                            onChangeText={(text) => setTaskData({...taskData, date: text})}
+                            placeholder="Start Date"
+                            value={taskData.start_date}
+                            onChangeText={(text) => setTaskData({...taskData, start_date: text})}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="End Date"
+                            value={taskData.end_date}
+                            onChangeText={(text) => setTaskData({...taskData, end_date: text})}
                         />
                         <TextInput
                             style={styles.input}
