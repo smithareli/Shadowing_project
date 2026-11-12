@@ -1,11 +1,11 @@
 import json
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, datetime
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from database_access import (
     pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
-    replace_current_cycle, delete_todays_insight, get_tasks
+    replace_current_cycle, delete_todays_insight, get_tasks, add_task
 )
 from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi.middleware.cors import CORSMiddleware
@@ -50,21 +50,31 @@ def update_current_cycle(body: CurrentCycleIn):
     delete_todays_insight()
     return build_response()
 
-@app.put("/add-task")
-def add_task(body: dict):
-    required_fields = [ "task_name", "task_start_date", "task_end_date", "task_start_time", "task_end_time"]
-    for field in required_fields:
-        if field not in body:
-            raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+class TaskIn(BaseModel):
+    name: str
+    description: str = ""
+    location: str | None = None
+    start_date: date
+    end_date: date
+    start_time: datetime
+    end_time: datetime
 
+    @model_validator(mode="after")
+    def check_order(self):
+        if self.end_time < self.start_time:
+            raise ValueError("end_time must be after start_time")
+        return self
+
+@app.post("/add-task")
+def add_task_route(body: TaskIn):
     add_task(
-        task_name=body["task_name"],
-        task_description=body["task_description"],
-        task_location=body["task_location"],
-        task_start_date=body["task_start_date"],
-        task_end_date=body["task_end_date"],
-        task_start_time=body["task_start_time"],
-        task_end_time=body["task_end_time"],
+        task_name=body.name,
+        task_description=body.description,
+        task_location=body.location,
+        task_start_date=body.start_date,
+        task_end_date=body.end_date,
+        task_start_time=body.start_time,
+        task_end_time=body.end_time,
     )
     return build_response()
 
