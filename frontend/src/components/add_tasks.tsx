@@ -154,6 +154,7 @@ const styles = StyleSheet.create({
             backgroundColor: "#EDEDED",
             justifyContent: "center",
             alignItems: "center",
+
             },
 
         row: {
@@ -169,6 +170,8 @@ const styles = StyleSheet.create({
             padding: 20,
             backgroundColor: "white",
             borderRadius: 12,
+            alignContent:'center',
+            justifyContent:'center',
         },
 
         entryBox: {
@@ -227,6 +230,7 @@ const styles = StyleSheet.create({
             borderRadius: 8,
             alignItems: "center",
             marginBottom: 8,
+
         },
         submitText: {
             color: "white",

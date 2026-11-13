@@ -2,6 +2,8 @@ import json
 from dotenv import load_dotenv
 from datetime import date, datetime
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+
 from pydantic import BaseModel, model_validator
 from database_access import (
     pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
@@ -87,3 +89,12 @@ def get_data():
 def get_google_calendar_events():
     events = get_calendar_events()
     return {"events": events}, build_response()
+
+@app.get("/privacy", response_class=HTMLResponse)
+def privacy():
+    return """
+    <h1>Berrie Privacy Policy</h1>
+    <p>Berrie is a student project. It reads Google Calendar events (read-only)
+    to show a user's daily schedule. Calendar data is not stored, sold, or shared.
+    Contact: areli.m.s.365@gmail.com</p>
+    """

@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { ActivityIndicator, Button, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import DailyPhase from '@/components/Daily-phase';
 import TaskUI from '@/components/task_ui';
 import AddTaskModal from '@/components/add_tasks';
+import { useColorScheme } from 'react-native';
+import { Colors } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+
+
 type Task = {
   taskId: string;
   title: string;
@@ -22,6 +27,8 @@ type CalendarEvent = {
 }
 
 export default function HomeScreen() {
+  const scheme = useColorScheme() ?? 'light';
+  const theme = Colors[scheme];
   const [loading, setLoading] = useState(true);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
@@ -93,41 +100,62 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.screen}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={theme.background} />
       </View>
     );
   }
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor: theme.background }]}>
           <ThemedView style={styles.title_container}>
-            <ThemedText type="title" style={styles.title}>
-              Hello Areli Smith!
+            <ThemedText type="title" style={[styles.title, { color: theme.headerText }]}>
+              {"Hello\nAreli Smith!"}
+            
             </ThemedText>
-            <ThemedText type="code" style={styles.code}>
+            <ThemedView style={styles.divider} />
+            <ThemedText type="code" style={[styles.code, { color: theme.headerText }]}>
               Here's today's schedule.
             </ThemedText>
           </ThemedView>
           {phase && <DailyPhase phase={phase} />}
           <ThemedView style={styles.tasks_container}>
             <ThemedView  style={styles.task_header}>
-              <ThemedText type="title" style={styles.title}>
+              <ThemedText type="title" style={styles.taskTitle}>
                 Tasks
               </ThemedText>
 
-              <ThemedView style={styles.button_container}>
-              <Button
-                title={calendarLoading ? 'Loading Calendar...' : 'Google Calendar'}
-                color="#FDF4F2"     
-                disabled={calendarLoading}
-                onPress={loadGoogleCalendarEvents}
-              />
-              </ThemedView>
-              <Pressable style={styles.button_container} onPress={() => setAddTaskModalVisible(true)}>
-                <ThemedText type="default" style={{ color: '#FDF4F2', textAlign: 'center' }}>
-                  Add Task
-                </ThemedText>
+                <Pressable
+                  disabled={calendarLoading}
+                  onPress={loadGoogleCalendarEvents}
+                  style={({ pressed }) => [
+                    styles.button_container,
+                    {
+                      backgroundColor: pressed
+                        ? theme.GooglecalendarButtonSelected
+                        : theme.GooglecalendarButtonDefault,
+                      opacity: calendarLoading ? 0.6 : 1,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.calendarButtonText,
+                      { color: theme.GooglecalendarButtonTextDefault },
+                    ]}
+                  >
+                    {calendarLoading ? 'Loading Calendar...' : 'Google Calendar'}
+                  </Text>
+                </Pressable>
+              <Pressable style={styles.addbuttoncontainer} onPress={() => setAddTaskModalVisible(true)}>
+                <Ionicons name="add" size={24} color={theme.addtaskbuttoniconDefault}/>
               </Pressable>
             </ThemedView>
+            
+          <ThemedView style={styles.taskListContainer}>
+          <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}
+            >
           {tasks.map((task) => (
             <TaskUI
               key={task.taskId}
@@ -138,6 +166,9 @@ export default function HomeScreen() {
               endTime={task.endTime}
             />
           ))}
+          </ScrollView>
+          </ThemedView>
+          
           <AddTaskModal
             visible={addTaskModalVisible}
             onClose={() => setAddTaskModalVisible(false)}
@@ -151,53 +182,102 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         flexDirection: 'column',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: '#f0f0f0',
+        
     },
     screen: {
       flex: 1,
-      backgroundColor: '#f0f0f0',
-      alignItems: 'center',
       justifyContent: 'flex-start',
       paddingHorizontal: 12,
       paddingTop: 100,
     },
     title_container: {
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    paddingVertical: 100,
-    verticalAlign: 'top',
-    flex: 1,
-    backgroundColor: '#f0f0f0',
+      display:'flex',
+      justifyContent: 'flex-start',
+      alignItems: 'flex-start',
+      width: '100%',
+      gap:'16px',
+      paddingTop: 60,
+      paddingBottom: 20,
+      
     },
     title: {
-        textAlign: 'center',
-        color: '#000',
+        //textAlign: 'center',
         fontSize: 24,
+        padding:0,
+        lineHeight: 25,
     },
     code: {
         textTransform: 'uppercase',
-        color: '#000',
         fontSize: 16,
     },
     tasks_container: {
         padding: 10,
-        backgroundColor: '#f0f0f0',
-        width: '90%',
+        width: '100%',
+        backgroundColor: Colors.light.taskListBackground,
+        borderRadius: 10,
+        marginTop: 20,
+        gap: 0,
     },
     task_header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
-        backgroundColor:"#FDF4F2",
+        marginBottom: 0,
+        paddingBottom:0,
+        backgroundColor: Colors.light.taskListBackground,
     },
     button_container: {
-        backgroundColor: '#1F092A',
-        borderRadius: 5,
+        borderRadius: 10,
+        width: 130,
+        height: 42,
         padding: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
+    divider:{
+      height: 3,
+      width:'50%',
+      backgroundColor: Colors.light.divider,
+      marginVertical: 10,
+    },
+    taskTitle: {
+      fontSize: 20,
+      color: Colors.light.taskListText,
+      paddingRight:80,
+
+    },
+    calendarButtonText: {
+      textAlign: 'center',
+      fontSize: 14,
+    }, 
+    addbuttoncontainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: Colors.light.addtaskbuttonDefault,
+      width:55,
+      height:55,
+      borderTopLeftRadius: 10,
+      borderTopRightRadius:10,
+
+    },
+    taskListContainer:{
+      width: '100%',       
+      minHeight: 200,       
+      padding: 12,         
+      borderRadius: 8,
+      backgroundColor: Colors.light.taskitemBackground,
+
+    },
+    scroll:{
+      flex:1,
+    },
+    content:{
+      padding:20,
+      alignItems:'center',
+      paddingBottom:40,
+    }
 });

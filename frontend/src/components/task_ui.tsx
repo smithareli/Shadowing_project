@@ -1,5 +1,7 @@
 import React, {useState} from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Colors } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
 type TaskProps = {
     taskId: string;
     title: string;
@@ -38,8 +40,9 @@ const styles = StyleSheet.create({
         padding: 10,
         verticalAlign: "middle",
         borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
+        //borderBottomColor: "#ccc",
         flexDirection: "row",
+        backgroundColor: Colors.light.taskitemBackground
     },
     radioContainer: {
         flexDirection: "row",
@@ -51,18 +54,18 @@ const styles = StyleSheet.create({
         height: 24,
         borderRadius: 12,
         borderWidth: 2,
-        borderColor: "#007AFF",
+        borderColor: Colors.light.taskListText,
         justifyContent: "center",
         alignItems: "center",
     },
     outerCircleSelected: {
-        borderColor: "#007AFF",
+        borderColor: Colors.light.taskListText,
     },
     innerCircle: {
         width: 12,
         height: 12,
         borderRadius: 6,
-        backgroundColor: "#007AFF",
+        backgroundColor: Colors.light.taskListText,
     },
     taskTitle: {
         fontSize: 16,
