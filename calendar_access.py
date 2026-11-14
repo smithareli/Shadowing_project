@@ -25,10 +25,17 @@ def get_calendar_events():
     creds = get_credentials()
     try:
         target_date = get_current_date()
-        start_of_day =f"{target_date}T00:00:00Z"
-        end_of_day = f"{target_date}T23:59:59Z"
+        start_of_day =f"{target_date}T00:00:00-05:00"
+        end_of_day = f"{target_date}T23:59:59-05:00"
         service = build("calendar", "v3", credentials=creds)
-        now = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+
+        # --- temporary diagnostics ---
+        cal = service.calendars().get(calendarId="primary").execute()
+        print("DEBUG account:", cal.get("id"), "| tz:", cal.get("timeZone"))
+        for c in service.calendarList().list().execute().get("items", []):
+            print("DEBUG calendar available:", c["id"], "|", c.get("summary"))
+        # -----------------------------
+
         events_result = service.events().list(
             calendarId="primary",
             timeMin=start_of_day,
@@ -39,8 +46,6 @@ def get_calendar_events():
         ).execute()
 
         events = events_result.get("items", [])
-        print("DEBUG target_date:", target_date)
-        print("DEBUG window:", start_of_day, end_of_day)
         print("DEBUG events found:", len(events))
         for event in events:
             start = event["start"].get("dateTime", event["start"].get("date"))
@@ -50,7 +55,7 @@ def get_calendar_events():
                 task_description=event.get("description", ""),
                 task_location=event.get("location", ""),
                 task_start_date=start[:10],
-                task_end_date=end.split[:10],
+                task_end_date=end[:10],
                 task_start_time=start,
                 task_end_time=end,
                 external_id=event.get("id"),
