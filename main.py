@@ -88,13 +88,14 @@ def get_data():
 @app.get("/google-calendar-events")
 def get_google_calendar_events():
     events = get_calendar_events()
-    return {"events": events}, build_response()
+    return build_response()
 
 @app.get("/privacy", response_class=HTMLResponse)
 def privacy():
     return """
     <h1>Berrie Privacy Policy</h1>
-    <p>Berrie is a student project. It reads Google Calendar events (read-only)
-    to show a user's daily schedule. Calendar data is not stored, sold, or shared.
-    Contact: areli.m.s.365@gmail.com</p>
+    <p>Berrie is a student project. With the user's permission, it reads Google Calendar
+    events (read-only) and saves their title, description, location, and times in the
+    app's database so they can be shown alongside the user's tasks. This data is used only
+    within the app and is not sold or shared. Contact: areli.m.s.365@gmail.com</p>
     """
