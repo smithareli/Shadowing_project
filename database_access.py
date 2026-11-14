@@ -88,12 +88,20 @@ def check_daily_insight():
         cur.execute("SELECT COUNT(*) FROM daily_insights WHERE daily_date = CURRENT_DATE;")
         num_insights = cur.fetchone()["count"]
         return num_insights > 0
-def add_task(task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time):
+def add_task(task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time,external_id=None, source="manual"):
     with get_cursor() as cur:
         cur.execute(
-            """INSERT INTO task (name, description, location, start_date, end_date, start_time, end_time)
-               VALUES (%s, %s, %s, %s, %s, %s, %s);""",
-            (task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time),
+            """INSERT INTO task (name, description, location, start_date, end_date, start_time, end_time, external_id, source)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+               ON CONFLICT (external_id) DO UPDATE SET
+               name=EXCLUDED.name,
+               description= EXCLUDED.description,
+               location= EXCLUDED.location,
+               start_date= EXCLUDED.start_date,
+               end_date= EXCLUDED.end_date,
+               start_time= EXCLUDED.start_time,
+               end_time = EXCLUDED.end_time;""",
+            (task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time, external_id, source),
         )
 def get_tasks():
     with get_cursor() as cur:

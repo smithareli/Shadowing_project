@@ -43,14 +43,15 @@ def get_calendar_events():
             start = event["start"].get("dateTime", event["start"].get("date"))
             end = event["end"].get("dateTime", event["end"].get("date"))
             add_task(
-                task_id=event.get("id"),
                 task_name=event.get("summary", "No Title"),
                 task_description=event.get("description", ""),
                 task_location=event.get("location", ""),
-                task_start_date=start.split("T")[0],
-                task_end_date=end.split("T")[0],
-                task_start_time=start.split("T")[1] if "T" in start else None,
-                task_end_time=end.split("T")[1] if "T" in end else None,
+                task_start_date=start[:10],
+                task_end_date=end.split[:10],
+                task_start_time=start,
+                task_end_time=end,
+                external_id=event.get("id"),
+                source="google",
             )
         return events
     except HttpError as error:
