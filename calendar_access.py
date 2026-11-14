@@ -39,6 +39,9 @@ def get_calendar_events():
         ).execute()
 
         events = events_result.get("items", [])
+        print("DEBUG target_date:", target_date)
+        print("DEBUG window:", start_of_day, end_of_day)
+        print("DEBUG events found:", len(events))
         for event in events:
             start = event["start"].get("dateTime", event["start"].get("date"))
             end = event["end"].get("dateTime", event["end"].get("date"))
