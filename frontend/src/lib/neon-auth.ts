@@ -1,3 +1,4 @@
+import './crypto-polyfill';
 import { createAuthClient } from '@neon/neon-js/auth';
 
 const authUrl = process.env.EXPO_PUBLIC_NEON_AUTH_URL;
