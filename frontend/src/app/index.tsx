@@ -8,6 +8,7 @@ import AddTaskModal from '@/components/add_tasks';
 import { useColorScheme } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons} from '@expo/vector-icons';
 
 
 type Task = {
@@ -43,19 +44,19 @@ export default function HomeScreen() {
         throw new Error(`Backend request failed with HTTP ${response.status}`);
       }
 
-      const json: { events?: CalendarEvent[] } = await response.json();
-      if (!Array.isArray(json.events)) {
-        throw new Error('Backend response must contain an events array.');
+      const json: { tasks?: any[] } = await response.json();
+      if (!Array.isArray(json.tasks)) {
+        throw new Error('Backend response must contain a tasks array.');
       }
-      /*
-      setTasks(json.events.map((event) => ({
-        taskId: event.id,
-        title: event.summary ?? '(Untitled event)',
-        description: event.description ?? '',
-        startTime: event.start?.dateTime ?? event.start?.date ?? '',
-        endTime: event.end?.dateTime ?? event.end?.date ?? '',
-      })));
-      */
+      setTasks(
+        json.tasks.map((task: any) => ({
+          taskId: String(task.id),
+          title: task.name,
+          description: task.description ?? '',
+          startTime: task.start_time ?? '',
+          endTime: task.end_time ?? '',
+        }))
+      );
     } catch (error: unknown) {
       console.error('Error fetching Google Calendar events:', error);
     } finally {
@@ -142,11 +143,15 @@ export default function HomeScreen() {
                       { color: theme.GooglecalendarButtonTextDefault },
                     ]}
                   >
-                    {calendarLoading ? 'Loading Calendar...' : 'Google Calendar'}
+                    {calendarLoading ? 'Loading...' : 'Google Calendar'}
                   </Text>
                 </Pressable>
               <Pressable style={styles.addbuttoncontainer} onPress={() => setAddTaskModalVisible(true)}>
-                <Ionicons name="add" size={24} color={theme.addtaskbuttoniconDefault}/>
+                <MaterialCommunityIcons
+                  name="plus-thick"
+                  size={24}
+                  color={theme.addtaskbuttoniconDefault}
+                />
               </Pressable>
             </ThemedView>
             
@@ -270,14 +275,18 @@ const styles = StyleSheet.create({
       padding: 12,         
       borderRadius: 8,
       backgroundColor: Colors.light.taskitemBackground,
+      alignContent:"flex-start",
+      justifyContent:"flex-start"
 
     },
     scroll:{
       flex:1,
     },
     content:{
-      padding:20,
-      alignItems:'center',
+      paddingHorizontal:0,
+      paddingVertical:0,
+      alignItems:'stretch',
       paddingBottom:40,
-    }
+      
+    },
 });

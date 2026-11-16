@@ -20,6 +20,7 @@ export const Colors = {
   light: {
     // Page
     background: darkberry,
+    popupBackground: lighttan,
     divider: lighttan,
     // Header
     headerText: tan,
@@ -96,6 +97,7 @@ export const Colors = {
   dark: {
     // Page
     background: darkberry,
+    popupBackground: mediumplum,
     divider: lighttan,
 
     // Header

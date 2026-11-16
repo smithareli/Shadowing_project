@@ -3,6 +3,10 @@ import {Modal, View, Text, TextInput, Pressable, StyleSheet, Image, Platform, Al
 import {useEffect} from "react";
 import {ActivityIndicator} from "react-native";
 import { Keyboard, TouchableWithoutFeedback } from "react-native";
+import {MaterialCommunityIcons} from '@expo/vector-icons';
+import { Colors } from '@/constants/theme';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 type Props = {
     visible:boolean;
     onClose:()=>void;
@@ -10,6 +14,8 @@ type Props = {
     backendUrl:string;
     initialData?: any;
 };
+type PickerField = "start_date" | "end_date" | null;
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]?\d|2[0-3]):([0-5]\d)$/;
 
@@ -27,6 +33,10 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
     //figure out how handle timezones later
     const [taskData, setTaskData] = useState(initialData || { title: "", description: "", startTime: "", endTime: "" , date: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const toYMD = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const [picker, setPicker] = useState<PickerField>(null);
+    
     useEffect(() => {
         setTaskData(initialData || { title: "", description: "", startTime: "", endTime: "" , start_date: "", end_date: ""});
     }, [initialData]);
@@ -75,25 +85,83 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
             <TouchableWithoutFeedback onPress={Platform.OS === "web"? undefined: Keyboard.dismiss}>
                 <View style={styles.overlay}>
                     <View style={styles.popup}>
-                        <Text>Add Task</Text>
+                        <View style={styles.row}>
+                            <Pressable style={styles.promptButton} onPress={onClose}>
+                                <MaterialCommunityIcons
+                                name="cancel"
+                                size={30}
+                                color={Colors.light.addtaskbuttoniconDefault}/>
+                            </Pressable>
+                            <Text> Add Task</Text>
+                            <Pressable style={styles.promptButton} onPress={handleSubmit} disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <ActivityIndicator />
+                                ) : (
+                                    <Text style={{ fontWeight: "bold" }}>Submit</Text>
+                                )}
+                            </Pressable>
+                        </View>
+                        
                         <TextInput
                             style={styles.input}
                             placeholder="Title"
                             value={taskData.title}
                             onChangeText={(text) => setTaskData({...taskData, title: text})}
                         />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Start Date"
-                            value={taskData.start_date}
-                            onChangeText={(text) => setTaskData({...taskData, start_date: text})}
-                        />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="End Date"
-                            value={taskData.end_date}
-                            onChangeText={(text) => setTaskData({...taskData, end_date: text})}
-                        />
+                        <Text> Select Start Date</Text>
+                        {Platform.OS === "web" ? (
+                            <input
+                                aria-label="Start date"
+                                type="date"
+                                value={taskData.start_date || ""}
+                                onChange={(event) => setTaskData({ ...taskData, start_date: event.currentTarget.value })}
+                                style={webDateInputStyle}
+                            />
+                        ) : (
+                            <Pressable style={styles.input} onPress={() => setPicker("start_date")}>
+                                <Text>{taskData.start_date || "Start date"}</Text>
+                            </Pressable>
+                        )}
+                        {picker=="start_date" && (
+                            <DateTimePicker
+                                value={taskData[picker] ? new Date(`${taskData[picker]}T12:00:00`) : new Date()}
+                                mode="date"
+                                display={Platform.OS === "ios" ? "compact" : "default"}
+                                onChange={(event, selectedDate) => {
+                                    if (event.type === "set" && selectedDate) {
+                                        setTaskData({ ...taskData, [picker]: toYMD(selectedDate) });
+                                    }
+                                    setPicker(null);
+                                }}
+                            />
+                        )}
+                        <Text> Select End Date</Text>
+                        {Platform.OS === "web" ? (
+                            <input
+                                aria-label="End date"
+                                type="date"
+                                value={taskData.end_date || ""}
+                                onChange={(event) => setTaskData({ ...taskData, end_date: event.currentTarget.value })}
+                                style={webDateInputStyle}
+                            />
+                        ) : (
+                            <Pressable style={styles.input} onPress={() => setPicker("end_date")}>
+                                <Text>{taskData.end_date || "End date"}</Text>
+                            </Pressable>
+                        )}
+                        {picker=="end_date" && (
+                            <DateTimePicker
+                                value={taskData[picker] ? new Date(`${taskData[picker]}T12:00:00`) : new Date()}
+                                mode="date"
+                                display={Platform.OS === "ios" ? "compact" : "default"}
+                                onChange={(event, selectedDate) => {
+                                    if (event.type === "set" && selectedDate) {
+                                        setTaskData({ ...taskData, [picker]: toYMD(selectedDate) });
+                                    }
+                                    setPicker(null);
+                                }}
+                            />
+                        )}
                         <TextInput
                             style={styles.input}
                             placeholder="Start Time"
@@ -112,26 +180,28 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
                             value={taskData.description}
                             onChangeText={(text) => setTaskData({...taskData, description: text})}
                         />
-                        <Pressable style={styles.promptButton}onPress={handleSubmit} disabled={isSubmitting}>
-                            {isSubmitting ? (
-                                <ActivityIndicator />
-                            ) : (
-                                <Text>Submit</Text>
-                            )}
-                        </Pressable>
-                        <Pressable style={styles.promptButton} onPress={onClose}>
-                            <Text>Cancel</Text>
-                        </Pressable>
+                        
                     </View>
                 </View>
             </TouchableWithoutFeedback>
         </Modal>
     )
 }
+const webDateInputStyle: React.CSSProperties = {
+    width: "100%",
+    border: `1px solid ${Colors.light.addtaskbuttoniconDefault}`,
+    backgroundColor: Colors.light.headerBackground,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 10,
+    boxSizing: "border-box",
+    color: Colors.light.taskListText,
+};
+
 const styles = StyleSheet.create({
         overlay: {
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: Colors.light.phaseBoxBackground,
             justifyContent: "center",
             alignItems: "center",
         },
@@ -148,10 +218,9 @@ const styles = StyleSheet.create({
             },
 
         promptButton: {
-            width: 45,
             height: 45,
-            borderRadius: 8,
-            backgroundColor: "#EDEDED",
+            borderRadius: 10,
+            backgroundColor: Colors.light.popupBackground,
             justifyContent: "center",
             alignItems: "center",
 
@@ -160,7 +229,10 @@ const styles = StyleSheet.create({
         row: {
             flexDirection: "row",
             alignItems: "center",
-            gap: 8, // optional, RN 0.71+
+            //gap: 8, 
+            justifyContent: "space-between",
+            //paddingHorizontal:50,
+            paddingBottom:50,
             },
 
         popup: {
@@ -168,10 +240,10 @@ const styles = StyleSheet.create({
             height: Platform.OS === "web" ? "auto" : "70%",
             maxHeight: "90%",
             padding: 20,
-            backgroundColor: "white",
+            backgroundColor: Colors.light.popupBackground,
             borderRadius: 12,
             alignContent:'center',
-            justifyContent:'center',
+            //justifyContent:'center',
         },
 
         entryBox: {
@@ -188,7 +260,8 @@ const styles = StyleSheet.create({
         },
         input: {
             borderWidth: 1,
-            borderColor: "#ccc",
+            borderColor: Colors.light.addtaskbuttoniconDefault,
+            backgroundColor: Colors.light.headerBackground,
             borderRadius: 8,
             padding: 10,
             marginBottom: 10,
@@ -196,7 +269,7 @@ const styles = StyleSheet.create({
         imagePicker: {
             height: 100,
             borderWidth: 1,
-            borderColor: "#ccc",
+            borderColor: Colors.light.addtaskbuttonDefault,
             borderRadius: 8,
             justifyContent: "center",
             alignItems: "center",
@@ -233,11 +306,11 @@ const styles = StyleSheet.create({
 
         },
         submitText: {
-            color: "white",
+            color: Colors.light.taskListText,
             fontWeight: "600",
         },
         cancelText: {
             textAlign: "center",
-            color: "black",
+            color: Colors.light.taskListText,
         },
         });

@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Image } from 'react-native';
+import { useColorScheme } from 'react-native';
+import { Colors } from '@/constants/theme';
 
 export default function AppTabs() {
   return (
@@ -7,10 +9,10 @@ export default function AppTabs() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarActiveTintColor: '#000000',
-        tabBarInactiveTintColor: '#555555',
+        tabBarActiveTintColor: Colors.light.footerBackgroundSelected,
+        tabBarInactiveTintColor: Colors.light.GooglecalendarButtonDefault,
         tabBarStyle: {
-          backgroundColor: '#D9D9D9',
+          backgroundColor: Colors.light.footerBackgroundDefault,
           borderRadius: 100,
           borderTopWidth: 0,
           bottom: 16,
