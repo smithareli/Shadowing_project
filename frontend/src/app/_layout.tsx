@@ -1,9 +1,14 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import "../lib/crypto-polyfill"
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
-
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { useEffect } from 'react';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import { neon } from '@/lib/neon';
+import { authClient } from '@/lib/neon-auth';
+
+WebBrowser.maybeCompleteAuthSession();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -12,21 +17,28 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const router = useRouter();
+  const url= Linking.useURL();
   const colorScheme = useColorScheme();
-  const { data: session, isPending } = neon.useSession();
+  useEffect(()=>{
+    const handleDeepLink = async(incomingUrl: string)=>{
+      const parsed= Linking.parse(incomingUrl);
+      if (parsed.path==="home" || parsed.path === "--/home"){
+        await authClient.getSession();
+        router.replace("/home");
+      }
+    };
+    if (url){
+      handleDeepLink(url);
+    }
+  }, [url]);
 
-  if (isPending) return null;
-  const isSignedIn = !!session?.user;
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Protected guard={isSignedIn}>
-          <Stack.Screen name="(tabs)"/>
-        </Stack.Protected>
-        <Stack.Protected guard={!isSignedIn}>
           <Stack.Screen name="index"/>
-        </Stack.Protected>
+          <Stack.Screen name="(tabs)"/>
       </Stack>
     </ThemeProvider>
   );

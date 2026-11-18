@@ -1,1 +1,1 @@
-export { neon as authClient } from './neon';
+export { authClient as authClient } from './auth';
