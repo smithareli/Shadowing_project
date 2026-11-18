@@ -1,8 +1,8 @@
 import json
 from dotenv import load_dotenv
 from datetime import date, datetime
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from pydantic import BaseModel, model_validator
 from database_access import (
@@ -99,3 +99,11 @@ def privacy():
     app's database so they can be shown alongside the user's tasks. This data is used only
     within the app and is not sold or shared. Contact: areli.m.s.365@gmail.com</p>
     """
+
+
+
+@app.get("/auth/callback")
+async def auth_callback(request: Request, redirect_uri: str = "myapp://home"):
+    query_string = request.url.query
+    target_url = f"{redirect_uri}?{query_string}" if query_string else redirect_uri
+    return RedirectResponse(url=target_url)
