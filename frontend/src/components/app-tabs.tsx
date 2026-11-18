@@ -27,7 +27,7 @@ export default function AppTabs() {
           top: 13,
         },
       }}>
-      <Tabs.Screen name="index" options={{tabBarIcon: ({ color, size = 33 }) => (
+      <Tabs.Screen name="home" options={{tabBarIcon: ({ color, size = 33 }) => (
       <Image
         source={require('@/assets/images/tabIcons/Home-page.png')}
         style={{ width: size, height: size, tintColor: color }}

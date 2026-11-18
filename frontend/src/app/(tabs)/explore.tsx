@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, ActivityIndicator, View, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import {toMarkedDates, toDraftMarkedDates} from "../components/ranged-dates";
-import { useCycleEdit, Cycle } from '../components/edit_cycle';
-import EditCycleUI from '../components/edit_cycle_ui';
+import {toMarkedDates, toDraftMarkedDates} from "../../components/ranged-dates";
+import { useCycleEdit, Cycle } from '../../components/edit_cycle';
+import EditCycleUI from '../../components/edit_cycle_ui';
 const BACKEND_URL = 'https://shadowing-project.onrender.com';
 export default function Explore() {
   const [selectedDate, setSelectedDate] = useState('');
