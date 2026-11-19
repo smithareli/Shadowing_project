@@ -107,3 +107,14 @@ async def auth_callback(request: Request, redirect_uri: str = "myapp://home"):
     query_string = request.url.query
     target_url = f"{redirect_uri}?{query_string}" if query_string else redirect_uri
     return RedirectResponse(url=target_url)
+
+@app.get("/auth-complete", response_class=HTMLResponse)
+def auth_complete():
+    return """
+    <html><body style="font-family:sans-serif;text-align:center;padding:40px">
+      <h2>Email verified!</h2>
+      <p>Returning to Berrie...</p>
+      <script>window.location.href = "berrie://home";</script>
+      <p><a href="berrie://profile">Tap here if the app doesn't open</a></p>
+    </body></html>
+    """

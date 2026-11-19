@@ -30,6 +30,8 @@ export default function ProfileScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const CALLBACK = 'https://shadowing-project.onrender.com/auth-complete';
+
 
     useEffect(() => {
         authClient.getSession().then((result) => {
@@ -43,11 +45,11 @@ export default function ProfileScreen() {
     }, []);
 
     const handleSubmit = async () => {
-        const appDeepLink= Linking.createURL("/home");
-        const renderCallbackUrl='http://onrender.com{encodeURIComponent(appDeepLink)}';
+        //const appDeepLink= Linking.createURL("/home");
+        //const renderCallbackUrl='http://onrender.com{encodeURIComponent(appDeepLink)}';
         const result = isSignUp
-        ? await authClient.signUp.email({ name: email.split('@')[0] || 'User', email, password, callbackURL: renderCallbackUrl})
-        : await authClient.signIn.email({ email, password, callbackURL: renderCallbackUrl});
+        ? await authClient.signUp.email({ name: email.split('@')[0] || 'User', email, password, callbackURL: CALLBACK})
+        : await authClient.signIn.email({ email, password, callbackURL: CALLBACK});
         if (result.error) {
         alert(result.error.message);
         return;
