@@ -28,6 +28,7 @@ type CalendarEvent = {
 }
 
 export default function HomeScreen() {
+  (console.log('HOME rendered'));
   const scheme = useColorScheme() ?? 'light';
   const theme = Colors[scheme];
   const [loading, setLoading] = useState(true);
