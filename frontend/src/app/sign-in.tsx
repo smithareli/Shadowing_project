@@ -49,22 +49,23 @@ export default function ProfileScreen() {
     }, []);
 
     const handleSubmit = async () => {
-        //const appDeepLink= Linking.createURL("/home");
-        //const renderCallbackUrl='http://onrender.com{encodeURIComponent(appDeepLink)}';
-        const result = isSignUp
-        ? await authClient.signUp.email({ name: email.split('@')[0] || 'User', email, password, callbackURL: CALLBACK})
-        : await authClient.signIn.email({ email, password, callbackURL: CALLBACK});
-        if (result.error) {
-        alert(result.error.message);
-        return;
+        setError(null);
+        setIsSubmitting(true);
+        try{
+            const result = isSignUp
+            ? await authClient.signUp.email({ name: email.split('@')[0] || 'User', email, password, callbackURL: CALLBACK})
+            : await authClient.signIn.email({ email, password, callbackURL: CALLBACK});
+            if (result.error) {
+                setError(result.error.message ?? 'Authentication failed.');
+                return;
+            }
+            await refresh();
+        } catch (cause){
+            setError(cause instanceof Error ? cause.message : 'Authentication failed.');
+        } finally {
+            setIsSubmitting(false);
         }
-        const sessionResult = await authClient.getSession();
-        if (sessionResult.data?.session && sessionResult.data?.user) {
-        setSession(sessionResult.data.session);
-        setUser(sessionResult.data.user);
-        console.log('REDIRECTING to /home');
-        await refresh();
-        }
+        
     };
 
     const handleSignOut = async () => {

@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
-import { authClient } from '@/lib/neon-auth';
+import { authClient } from '@/lib/auth';
 
 type AuthState = {
   isLoading: boolean;
