@@ -7,7 +7,7 @@ from database_access import add_new_cycle, pull_data, add_daily_insight, get_cur
 load_dotenv()
 
 client = genai.Client()
-def predict_next_cycles(rows, predicted):
+def predict_next_cycles(rows, predicted, user_id):
     interaction = client.interactions.create(
                 model="gemini-3.8-flash",
                 input="Predict the next " + str(predicted) + " cycles using this data: " + str(rows),
@@ -46,10 +46,10 @@ def predict_next_cycles(rows, predicted):
             cycle["predicted"],
             cycle["created_at"],
             ]
-        add_new_cycle(*cycle_row)
-    rows = pull_data()
+        add_new_cycle(*cycle_row, user_id)
+    rows = pull_data(user_id)
     return rows
-def predict_daily_insights(rows):
+def predict_daily_insights(rows, user_id):
     insight_date = get_current_date()
     interaction = client.interactions.create(
                 model="gemini-3.8-flash",
@@ -94,6 +94,7 @@ def predict_daily_insights(rows):
     insight = daily_insight["insight"]
     add_daily_insight(
         phase=insight["phase"],
+        user_id= user_id,
         symptom=insight["symptoms"],
         Tips=insight["tips"],
     )

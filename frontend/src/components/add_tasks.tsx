@@ -6,6 +6,7 @@ import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useAuth } from "@/lib/auth-context";
 
 type Props = {
     visible:boolean;
@@ -31,6 +32,7 @@ function toTimestamp(date: string, time: string): string | null {
 }
 export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, initialData}: Props) {
     //figure out how handle timezones later
+    const { userId }= useAuth();
     const [taskData, setTaskData] = useState(initialData || { title: "", description: "", startTime: "", endTime: "" , date: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -41,6 +43,8 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
         setTaskData(initialData || { title: "", description: "", startTime: "", endTime: "" , start_date: "", end_date: ""});
     }, [initialData]);
     const submit = async (data: any) => {
+        if (!userId) return Alert.alert("Error", "You need to be signed in.");
+
         const title = data.title?.trim();
         const start = toTimestamp(data.start_date, data.startTime);
         const end = toTimestamp(data.end_date, data.endTime);
@@ -64,7 +68,7 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
         try {
             const response = await fetch(`${backendUrl}/add-task`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "X-User_id": userId },
             body: JSON.stringify(payload),
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);

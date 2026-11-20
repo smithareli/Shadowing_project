@@ -9,6 +9,7 @@ import { useColorScheme } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialCommunityIcons} from '@expo/vector-icons';
+import {useAuth} from '@/lib/auth-context';
 
 
 type Task = {
@@ -36,11 +37,11 @@ export default function HomeScreen() {
   const [phase, setPhase] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [addTaskModalVisible, setAddTaskModalVisible] = useState(false);
-
+  const { userId } = useAuth();
   const loadGoogleCalendarEvents = async () => {
     setCalendarLoading(true);
     try {
-      const response = await fetch('https://shadowing-project.onrender.com/google-calendar-events');
+      const response = await fetch('https://shadowing-project.onrender.com/google-calendar-events', {headers:{ 'X-User_Id': userId!},});
       if (!response.ok) {
         throw new Error(`Backend request failed with HTTP ${response.status}`);
       }
@@ -68,7 +69,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const backendUrl = 'https://shadowing-project.onrender.com';
 
-    fetch(backendUrl)
+    fetch(backendUrl, {headers:{ 'X-User_Id': userId!},})
       .then((response: Response) => {
         if (!response.ok) {
           throw new Error(`Backend request failed with HTTP ${response.status}`);
