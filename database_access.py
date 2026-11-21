@@ -27,6 +27,7 @@ def pull_history(user_id):
         cur.execute("SELECT start_date, end_date, is_current, is_predicted FROM cycle WHERE is_predicted = FALSE AND userid = %s ORDER BY start_date;", (user_id,))
         return cur.fetchall()
 def replace_current_cycle(start, end, user_id):
+    print("replace_current_cycle CALLED", user_id)
     with get_cursor() as cur:
         cur.execute("DELETE FROM cycle WHERE is_predicted = TRUE AND userid= %s;", (user_id,))
         cur.execute("DELETE FROM CYCLE WHERE is_current=TRUE AND userid= %s;", (user_id,))

@@ -30,12 +30,13 @@ app.add_middleware(
 load_dotenv()
 def build_response(user_id):
     cycles = pull_data(user_id)
+    history= pull_history(user_id)
     needed = check_cycle(user_id)
-    if needed > 0:
-        predict_next_cycles(pull_history(user_id), needed, user_id)
+    if needed > 0 and history:
+        predict_next_cycles(history, needed, user_id)
         cycles = pull_data(user_id)  
 
-    if not check_daily_insight(user_id):
+    if cycles and not check_daily_insight(user_id):
         predict_daily_insights(cycles, user_id)
 
     insights = get_daily_insight(user_id)
