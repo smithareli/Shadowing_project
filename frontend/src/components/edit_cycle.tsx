@@ -38,11 +38,8 @@ export function useCycleEdit(cycles: Cycle[], backendUrl: string, onSaved: (cycl
     };
     const cancel = () => setEditMode(false);
     const save = async () => {
-        if(draft.size === 0) return;
+        if(draft.size === 0 || !userId) return;
         setIsSaving(true);
-        if(!userId){
-            return;
-        }
         try {
            const res = await fetch(`${backendUrl}/current-cycle`, { 
             method: 'PUT',

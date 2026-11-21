@@ -38,6 +38,8 @@ export default function HomeScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [addTaskModalVisible, setAddTaskModalVisible] = useState(false);
   const { userId } = useAuth();
+  (console.log(userId));
+
   const loadGoogleCalendarEvents = async () => {
     setCalendarLoading(true);
     try {

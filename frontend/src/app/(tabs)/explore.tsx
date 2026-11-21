@@ -27,6 +27,7 @@ export default function Explore() {
           throw new Error('Backend response must contain a cycles array.');
         }
         setCycles(json.cycles);
+        console.log('cycles from backend:', json.cycles.length, json.cycles[0]);
       })
       .catch((error: unknown) => {
         console.error('Error fetching data:', error);
