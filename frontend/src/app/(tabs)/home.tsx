@@ -41,7 +41,7 @@ export default function HomeScreen() {
   const loadGoogleCalendarEvents = async () => {
     setCalendarLoading(true);
     try {
-      const response = await fetch('https://shadowing-project.onrender.com/google-calendar-events', {headers:{ 'X-User_Id': userId!},});
+      const response = await fetch('https://shadowing-project.onrender.com/google-calendar-events', {headers:{ 'X-User-Id': userId!},});
       if (!response.ok) {
         throw new Error(`Backend request failed with HTTP ${response.status}`);
       }
@@ -68,8 +68,11 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const backendUrl = 'https://shadowing-project.onrender.com';
+    if(!userId){
+      return;
+    }
 
-    fetch(backendUrl, {headers:{ 'X-User_Id': userId!},})
+    fetch(backendUrl, {headers:{ 'X-User-Id': userId!},})
       .then((response: Response) => {
         if (!response.ok) {
           throw new Error(`Backend request failed with HTTP ${response.status}`);
@@ -98,7 +101,7 @@ export default function HomeScreen() {
         console.error('Error fetching data:', error);
         setLoading(false);
       });
-  }, []);
+  }, [userId]);
 
   if (loading) {
     return (

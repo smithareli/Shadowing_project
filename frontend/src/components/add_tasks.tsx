@@ -68,7 +68,7 @@ export default function AddTaskModal({visible,  onClose, onSubmit, backendUrl, i
         try {
             const response = await fetch(`${backendUrl}/add-task`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", "X-User_id": userId },
+            headers: { "Content-Type": "application/json", "X-User-id": userId },
             body: JSON.stringify(payload),
             });
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
