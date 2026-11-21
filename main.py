@@ -32,7 +32,7 @@ def build_response(user_id):
     cycles = pull_data(user_id)
     needed = check_cycle(user_id)
     if needed > 0:
-        predict_next_cycles(pull_history(), needed, user_id)
+        predict_next_cycles(pull_history(user_id), needed, user_id)
         cycles = pull_data(user_id)  
 
     if not check_daily_insight(user_id):
