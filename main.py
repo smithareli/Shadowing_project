@@ -87,6 +87,11 @@ def add_task_route(body: TaskIn, user_id: str = Depends(current_user_id)):
         
     )
     return build_response(user_id)
+class GoalsIn(BaseModel):
+    productivity: str | None = None
+    fitness: str | None = None
+    energy: str | None = None
+    learning: str | None = None
 @app.post("/add-goals")
 def add_goals_route(body: GoalsIn, user_id: str = Depends(current_user_id)):
     saved=add_goals(
