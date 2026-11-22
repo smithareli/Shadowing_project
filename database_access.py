@@ -118,6 +118,7 @@ def add_goals(productivity, fitness, energy, learning, user_id):
         )
         row = cur.fetchone()
         return cur.rowcount   
+def get_goals(user_id): 
     with get_cursor() as cur:
         cur.execute("SELECT goals FROM profile WHERE userid = %s;", (user_id,))
         row=cur.fetchone()
