@@ -117,8 +117,7 @@ def add_goals(productivity, fitness, energy, learning, user_id):
         cur.execute(""" UPDATE profile SET goals = ARRAY[%s,%s,%s,%s] WHERE userid=%s;""", (productivity, fitness, energy, learning, user_id)
         )
         row = cur.fetchone()
-        return row["goals"] if row else None
-def get_goals(user_id):
+        return cur.rowcount   
     with get_cursor() as cur:
         cur.execute("SELECT goals FROM profile WHERE userid = %s;", (user_id,))
         row=cur.fetchone()

@@ -94,14 +94,16 @@ class GoalsIn(BaseModel):
     learning: str | None = None
 @app.post("/add-goals")
 def add_goals_route(body: GoalsIn, user_id: str = Depends(current_user_id)):
-    saved=add_goals(
+    updated=add_goals(
         body.productivity,
         body.fitness,
         body.energy,
         body.learning,
         user_id, 
     )
-    return {"productivity": saved[0], "fitness": saved[1], "energy": saved[2], "learning": saved[3]}
+    if updated == 0:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return body.model_dump()
 
 @app.get("/")
 def get_data(user_id: str = Depends(current_user_id)):
