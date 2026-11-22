@@ -15,7 +15,7 @@ import { ThemedView } from '@/components/themed-view';
 import {useAuth} from '@/lib/auth-context';
 import { Colors } from '@/constants/theme';
 import { MaterialCommunityIcons} from '@expo/vector-icons';
-
+import EditGoalsModal from '@/components/edit_focus_edit';
 
 type AuthUser = {
     email: string;
@@ -25,11 +25,23 @@ type AuthUser = {
 type AuthSession = NonNullable<Awaited<ReturnType<typeof authClient.getSession>>['data']>['session'];
 
 
-export default function InsightsScreen() {
+export default function ProfileScreen() {
     const {refresh}= useAuth();
+    const { userId }= useAuth();
     const [session, setSession] = useState<AuthSession | null>(null);
     const [user, setUser] = useState<AuthUser | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editGoalModalVisible, setEditGoalModalVisible] = useState(false);
+    const [goals, setGoals] = useState<any>(null);   // the user's saved goals
+    useEffect(() => {
+        if (!userId) return;
+        fetch('https://shadowing-project.onrender.com/goals', {
+            headers: { 'X-User-Id': userId },
+        })
+            .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+            .then(setGoals)
+            .catch((e) => console.error('Error loading goals:', e));
+    }, [userId]);
 
     const handleSignOut = async () => {
             await authClient.signOut();
@@ -74,7 +86,7 @@ export default function InsightsScreen() {
                 </Pressable>
                 <ThemedView style={styles.divider} />
                 <Pressable
-                    //onPress={}
+                    onPress={() => setEditGoalModalVisible(true)}
                     style={[styles.item_container]}>
                     <ThemedView style={styles.leftaligned}>
 
@@ -146,6 +158,14 @@ export default function InsightsScreen() {
                     </ThemedText>
                 </Pressable>
             </ThemedView>
+            <EditGoalsModal
+                visible={editGoalModalVisible}
+                onClose={() => setEditGoalModalVisible(false)}
+                onSubmit={(saved) => setGoals(saved)}
+                backendUrl="https://shadowing-project.onrender.com"
+                initialData={goals ?? undefined}
+                />
+
         </ThemedView>
     );
 }

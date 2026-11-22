@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, model_validator
 from database_access import (
     pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
-    replace_current_cycle, delete_todays_insight, get_tasks, add_task
+    replace_current_cycle, delete_todays_insight, get_tasks, add_task, get_goals, add_goals
 )
 from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi.middleware.cors import CORSMiddleware
@@ -87,7 +87,16 @@ def add_task_route(body: TaskIn, user_id: str = Depends(current_user_id)):
         
     )
     return build_response(user_id)
-
+@app.post("/add-goals")
+def add_goals_route(body: GoalsIn, user_id: str = Depends(current_user_id)):
+    saved=add_goals(
+        body.productivity,
+        body.fitness,
+        body.energy,
+        body.learning,
+        user_id, 
+    )
+    return {"productivity": saved[0], "fitness": saved[1], "energy": saved[2], "learning": saved[3]}
 
 @app.get("/")
 def get_data(user_id: str = Depends(current_user_id)):
@@ -126,3 +135,6 @@ def auth_complete():
       <p><a href="berrie://profile">Tap here if the app doesn't open</a></p>
     </body></html>
     """
+@app.get("/goals")
+def goals_route(user_id:str = Depends(current_user_id)):
+    return get_goals(user_id)

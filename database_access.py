@@ -112,3 +112,17 @@ def get_tasks(user_id):
             AND end_date   >= (NOW() AT TIME ZONE 'America/New_York')::date AND userid= %s;
         """, (user_id,))       
         return cur.fetchall()
+def add_goals(productivity, fitness, energy, learning, user_id):
+    with get_cursor() as cur:
+        cur.execute(""" UPDATE profile SET goals = ARRAY[%s,%s,%s,%s] WHERE userid=%s;""", (productivity, fitness, energy, learning, user_id)
+        )
+        row = cur.fetchone()
+        if row is None:
+            return None
+        return row["goals"]
+def get_goals(user_id):
+    with get_cursor() as cur:
+        cur.execute("SELECT goals FROM profile WHERE userid = %s;", (user_id,))
+        row=cur.fetchone()
+        g = (row["goals"] if row and row["goals"] else [None] * 4)
+        return {"productivity": g[0], "fitness": g[1], "energy": g[2], "learning": g[3]}
