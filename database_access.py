@@ -114,9 +114,8 @@ def get_tasks(user_id):
         return cur.fetchall()
 def add_goals(productivity, fitness, energy, learning, user_id):
     with get_cursor() as cur:
-        cur.execute(""" UPDATE profile SET goals = ARRAY[%s,%s,%s,%s] WHERE userid=%s;""", (productivity, fitness, energy, learning, user_id)
+        cur.execute(""" UPDATE profile SET goals = ARRAY[%s, %s, %s, %s]::text[] WHERE userid = %s;""", (productivity, fitness, energy, learning, user_id)
         )
-        row = cur.fetchone()
         return cur.rowcount   
 def get_goals(user_id): 
     with get_cursor() as cur:
