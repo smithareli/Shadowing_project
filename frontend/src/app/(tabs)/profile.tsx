@@ -5,6 +5,7 @@ import {
     StyleSheet,
     TextInput,
     View,
+    Text,
 } from 'react-native';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,9 @@ import { authClient } from '@/lib/auth';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {useAuth} from '@/lib/auth-context';
+import { Colors } from '@/constants/theme';
+import { MaterialCommunityIcons} from '@expo/vector-icons';
+
 
 type AuthUser = {
     email: string;
@@ -39,9 +43,99 @@ export default function InsightsScreen() {
                 <ThemedText type="title" style={styles.title}>
                     Profile
                 </ThemedText>
-                <ThemedText type="code" style={styles.code}>
-                    Here are your insights.
+            </ThemedView>
+            <ThemedView style ={styles.header_container}>
+                <ThemedText type="title" style={styles.header}>
+                    Areli Smith 
                 </ThemedText>
+                <Text style={styles.code}>
+                    areli.m.s.365@gmail.com
+                </Text>
+            </ThemedView>
+            <ThemedView style = {styles.editing_container}>
+                <Pressable
+                    //onPress={}
+                    style={[styles.item_container]}>
+                    <ThemedView style={styles.leftaligned}>
+                        <MaterialCommunityIcons
+                            name="account-edit"
+                            size={20}
+                            color={Colors.light.addtaskbuttoniconDefault}
+                        />
+                        <Text style= {styles.item_text}>
+                            Edit Profile Name
+                        </Text>
+                    </ThemedView>
+                    <MaterialCommunityIcons
+                        name="arrow-right"
+                        size={20}
+                        color={Colors.light.headerText}
+                    />
+                </Pressable>
+                <ThemedView style={styles.divider} />
+                <Pressable
+                    //onPress={}
+                    style={[styles.item_container]}>
+                    <ThemedView style={styles.leftaligned}>
+
+                    <MaterialCommunityIcons
+                        name= "table-edit"
+                        size={20}
+                        color={Colors.light.addtaskbuttoniconDefault}
+                    />
+                    <Text style= {styles.item_text}>
+                        Edit Focus Goals
+                    </Text>
+                    </ThemedView>
+                    <MaterialCommunityIcons
+                        name="arrow-right"
+                        size={20}
+                        color={Colors.light.headerText}
+                    />
+                </Pressable>
+                <ThemedView style={styles.divider} />
+                <Pressable
+                    //onPress={}
+                    style={[styles.item_container]}>
+                    <ThemedView style={styles.leftaligned}>
+
+                    <MaterialCommunityIcons
+                        name="lock"
+                        size={20}
+                        color={Colors.light.addtaskbuttoniconDefault}
+                    />
+                    <Text style= {styles.item_text}>
+                        Change Password
+                    </Text>
+                    </ThemedView>
+                    <MaterialCommunityIcons
+                        name="arrow-right"
+                        size={20}
+                        color={Colors.light.headerText}
+                    />
+                </Pressable>
+                <ThemedView style={styles.divider} />
+                <Pressable
+                    //onPress={}
+                    style={[styles.item_container]}>
+                    <ThemedView style={styles.leftaligned}>
+                    <MaterialCommunityIcons
+                        name="email"
+                        size={20}
+                        color={Colors.light.addtaskbuttoniconDefault}
+                    />
+                    <Text style= {styles.item_text}>
+                        Change Email Address
+                    </Text>
+                    </ThemedView>
+                    <MaterialCommunityIcons
+                        name="arrow-right"
+                        size={20}
+                        color={Colors.light.headerText}
+                    />
+                </Pressable>
+                <ThemedView style={styles.divider} />
+
                 <Pressable
                     accessibilityRole="button"
                     disabled={isSubmitting}
@@ -58,34 +152,50 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        //flexDirection: 'row',
         alignItems: 'center',
-        padding: 20,
-        backgroundColor: '#f0f0f0',
+        //paddingVertical: 20,
+        gap:20,
+        backgroundColor: Colors.light.background,
     },
     title_container: {
         alignItems: 'flex-start',
         justifyContent: 'center',
-        paddingVertical: 100,
+        paddingTop: 60,
         verticalAlign: 'top',
-        flex: 1,
-        backgroundColor: '#f0f0f0',
+        //flex: 1,
     },
     title: {
         textAlign: 'center',
-        color: '#000',
+        fontSize:24,
+        color: Colors.light.headerText,
+    },
+    header_container:{
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding:20,
+        backgroundColor: Colors.light.phaseBoxBackground,
+        width:'100%'
+
+    },
+    header:{
+        textAlign:'center',
+        fontSize: 36,
+        color: Colors.light.headerText,
+
     },
     code: {
-        textTransform: 'uppercase',
-        color: '#000',
+        textAlign:'center',
+        color: Colors.light.headerText,
     }, 
     button: {
         minHeight: 48,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 10,
-        backgroundColor: '#208aeF',
+        padding:10,
+        backgroundColor: Colors.light.addtaskbuttoniconDefault,
     },
     buttonDisabled: {
         opacity: 0.55,
@@ -94,4 +204,38 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         fontWeight: '700',
     },
+    editing_container:{
+        justifyContent: 'center',
+        width:'80%',
+        //flexDirection:'row',
+        alignItems: 'center',
+        backgroundColor: Colors.light.taskListBackground,
+        borderRadius:10,
+        padding:10,
+    },
+    item_container:{
+        justifyContent:"space-between",
+        alignItems:"center",
+        flexDirection:'row',
+        width:'100%',
+        padding: 15,
+    },
+    item_text:{
+       fontSize:14,
+       textAlign: 'left',
+       color: Colors.light.taskListText,
+
+    },
+    divider:{
+          height: 3,
+          width:'100%',
+          backgroundColor: Colors.light.profileDivider,
+          marginVertical: 10,
+        },
+    leftaligned:{
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        backgroundColor: Colors.light.taskListBackground,
+        gap:20,
+    }
 });
