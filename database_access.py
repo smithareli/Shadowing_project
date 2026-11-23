@@ -92,8 +92,8 @@ def check_daily_insight(user_id):
 def add_task(task_name, task_description, task_location, task_start_date, task_end_date, task_start_time, task_end_time,user_id,external_id=None, source="manual"):
     with get_cursor() as cur:
         cur.execute(
-            """INSERT INTO task (name, description, location, start_date, end_date, start_time, end_time, external_id, source, userid)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s)
+            """INSERT INTO task (name, description, location, start_date, end_date, start_time, end_time, external_id, source, userid, done)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s, false)
                ON CONFLICT (external_id) DO UPDATE SET
                name=EXCLUDED.name,
                description= EXCLUDED.description,
@@ -108,10 +108,18 @@ def get_tasks(user_id):
     with get_cursor() as cur:
         cur.execute("""
             SELECT * FROM task
-            WHERE start_date <= (NOW() AT TIME ZONE 'America/New_York')::date
-            AND end_date   >= (NOW() AT TIME ZONE 'America/New_York')::date AND userid= %s;
-        """, (user_id,))       
+            WHERE (start_date <= (NOW() AT TIME ZONE 'America/New_York')::date
+            AND end_date   >= (NOW() AT TIME ZONE 'America/New_York')::date AND userid= %s) OR (end_date <=(NOW() AT TIME ZONE 'America/New_York')::date AND done=false AND userid=%s);
+        """, (user_id,user_id))       
         return cur.fetchall()
+def task_for_recs(user_id):
+    with get_cursor() as cur:
+        cur.execute(""" SELECT * FROM task WHERE done=false AND userid=%s;""", (user_id,))
+        return cur.fetchall()
+def set_task_done(task_id, done, user_id):
+    with get_cursor() as cur:
+        cur.execute("UPDATE task SET done = %s WHERE id = %s AND userid = %s;", (done, task_id, user_id))
+        return cur.rowcount
 def add_goals(productivity, fitness, energy, learning, user_id):
     with get_cursor() as cur:
         cur.execute(""" UPDATE profile SET goals = ARRAY[%s, %s, %s, %s]::text[] WHERE userid = %s;""", (productivity, fitness, energy, learning, user_id)

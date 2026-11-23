@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, model_validator
 from database_access import (
     pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
-    replace_current_cycle, delete_todays_insight, get_tasks, add_task, get_goals, add_goals
+    replace_current_cycle, delete_todays_insight, get_tasks, add_task, get_goals, add_goals, set_task_done
 )
 from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi.middleware.cors import CORSMiddleware
@@ -104,6 +104,15 @@ def add_goals_route(body: GoalsIn, user_id: str = Depends(current_user_id)):
     if updated == 0:
         raise HTTPException(status_code=404, detail="Profile not found")
     return body.model_dump()
+
+class DoneIn(BaseModel):
+    id:int
+    done: bool
+@app.post("/mark-done")
+def mark_done_route(body:DoneIn, user_id: str = Depends(current_user_id)):
+    if set_task_done(body.id, body.done, user_id)==0:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"id": body.id, "done":body.done}
 
 @app.get("/")
 def get_data(user_id: str = Depends(current_user_id)):

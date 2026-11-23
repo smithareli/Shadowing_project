@@ -18,6 +18,7 @@ type Task = {
   description: string;
   startTime: string;
   endTime: string;
+  done: boolean
 };
 
 type CalendarEvent = {
@@ -59,6 +60,7 @@ export default function HomeScreen() {
           description: task.description ?? '',
           startTime: task.start_time ?? '',
           endTime: task.end_time ?? '',
+          done: !!task.done,
         }))
       );
     } catch (error: unknown) {
@@ -94,6 +96,7 @@ export default function HomeScreen() {
               description: task.description ?? '',
               startTime: task.start_time ?? '',
               endTime: task.end_time ?? '',
+              done: !!task.done,
             }))
           );
         }
@@ -176,6 +179,8 @@ export default function HomeScreen() {
               description={task.description}
               startTime={task.startTime}
               endTime={task.endTime}
+              done={task.done}
+              backendUrl="https://shadowing-project.onrender.com"
             />
           ))}
           </ScrollView>
