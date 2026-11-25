@@ -21,7 +21,7 @@ def get_credentials():
             raise RuntimeError("Google token invalid; regenerate it locally.")
     return creds
 
-def get_calendar_events():
+def get_calendar_events(user_id):
     creds = get_credentials()
     try:
         target_date = get_current_date()
@@ -58,6 +58,7 @@ def get_calendar_events():
                 task_end_date=end[:10],
                 task_start_time=start,
                 task_end_time=end,
+                user_id=user_id,
                 external_id=event.get("id"),
                 source="google",
             )

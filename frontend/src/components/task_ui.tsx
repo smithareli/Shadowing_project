@@ -1,8 +1,9 @@
-import React, {useState} from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, {useState, useEffect} from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedView } from "./themed-view";
+import { useAuth } from "@/lib/auth-context";
 function formatTime(value?: string): string {
   if (!value) return '';
   let d = new Date(value);
@@ -33,15 +34,41 @@ type TaskProps = {
     description: string;
     startTime: string;
     endTime: string;
+    done?:boolean;
+    backendUrl:string;
 };
-export default function TaskUI({ taskId, title, description, startTime, endTime }: TaskProps) {
-    const [isEnabled, setIsEnabled] = React.useState(false);
+export default function TaskUI({ taskId, title, description, startTime, endTime, done=false, backendUrl }: TaskProps) {
+   
+    const [isEnabled, setIsEnabled] = useState(done);
+    const {userId}= useAuth();
+    useEffect(() => setIsEnabled(done), [done]);
+
+    const handleClicked = async() =>{
+        if (!userId) return Alert.alert("Error", "You need to be signed in.");
+        const next= !isEnabled;
+        setIsEnabled(next);
+        try {
+            const response = await fetch(`${backendUrl}/mark-done`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-User-id": userId },
+            body: JSON.stringify({id: Number(taskId), done:next}),
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            } catch (error) {
+                console.error("Error submitting task:", error);
+                setIsEnabled(!next);
+                Alert.alert("Error", "Failed to submit task. Please try again.");
+            } 
+        };
+    
+
+    
     return (
         <View style={styles.taskContainer}>
             <View style={styles.taskitem}>
             <TouchableOpacity 
                 style={styles.radioContainer} 
-                onPress={() => setIsEnabled(!isEnabled)}
+                onPress={() => handleClicked()}
                 activeOpacity={0.8}
                 accessible={true}
                 accessibilityRole="radio"

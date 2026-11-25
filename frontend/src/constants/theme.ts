@@ -22,6 +22,8 @@ export const Colors = {
     background: darkberry,
     popupBackground: lighttan,
     divider: lighttan,
+    profileDivider:'rgba(226,205,200,0.50)',
+
     // Header
     headerText: tan,
     headerBackground: mediumberry,
@@ -99,6 +101,7 @@ export const Colors = {
     background: darkberry,
     popupBackground: mediumplum,
     divider: lighttan,
+    profileDivider:'rgba(226,205,200,0.50)',
 
     // Header
     headerText: tan,

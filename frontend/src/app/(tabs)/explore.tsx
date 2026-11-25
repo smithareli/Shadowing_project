@@ -1,30 +1,33 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, ActivityIndicator, View, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import {toMarkedDates, toDraftMarkedDates} from "../components/ranged-dates";
-import { useCycleEdit, Cycle } from '../components/edit_cycle';
-import EditCycleUI from '../components/edit_cycle_ui';
+import {toMarkedDates, toDraftMarkedDates} from "../../components/ranged-dates";
+import { useCycleEdit, Cycle } from '../../components/edit_cycle';
+import EditCycleUI from '../../components/edit_cycle_ui';
+import { useAuth } from '@/lib/auth-context';
+
 const BACKEND_URL = 'https://shadowing-project.onrender.com';
 export default function Explore() {
+  const { userId }= useAuth();
   const [selectedDate, setSelectedDate] = useState('');
   const[loading, setLoading] = useState(true);
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const {editMode, draft, isSaving, startEditing, toggleDay, cancel, save} = useCycleEdit(cycles, BACKEND_URL, setCycles);
   useEffect(() => {
-    const fetchJson = (url: string) => (globalThis as any).fetch(url);
-
-    fetchJson(BACKEND_URL)
-      .then((response: Response) => {
+    if(!userId) return;
+    fetch(BACKEND_URL,{ headers: { 'X-User-Id': userId } })
+      .then((response) => {
         if (!response.ok) {
           throw new Error(`Backend request failed with HTTP ${response.status}`);
         }
         return response.json();
       })
-      .then((json: { cycles?: { start_date: string; end_date: string }[] }) => {
+      .then((json: { cycles?: Cycle[] }) => {
         if (!Array.isArray(json.cycles)) {
           throw new Error('Backend response must contain a cycles array.');
         }
         setCycles(json.cycles);
+        console.log('cycles from backend:', json.cycles.length, json.cycles[0]);
       })
       .catch((error: unknown) => {
         console.error('Error fetching data:', error);
@@ -33,7 +36,7 @@ export default function Explore() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [userId]);
   if (loading) {
     return (
       <View style={styles.screen}>

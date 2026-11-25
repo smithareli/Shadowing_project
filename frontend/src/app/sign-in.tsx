@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -6,16 +7,25 @@ import {
     TextInput,
     View,
 } from 'react-native';
-import { authClient } from '@/lib/neon-auth';
+import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
+import { authClient } from '@/lib/auth';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import {useAuth} from '@/lib/auth-context';
 
 type AuthUser = {
     email: string;
     name: string;
 };
 
+type AuthSession = NonNullable<Awaited<ReturnType<typeof authClient.getSession>>['data']>['session'];
+
 export default function ProfileScreen() {
+    (console.log('PROFILE rendered'));
+    const router = useRouter();
+    const {refresh}= useAuth();
+    const [session, setSession] = useState<AuthSession | null>(null);
     const [user, setUser] = useState<AuthUser | null>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,87 +33,46 @@ export default function ProfileScreen() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const CALLBACK = 'https://shadowing-project.onrender.com/auth-complete';
+
 
     useEffect(() => {
-        let isCurrent = true;
-
-        authClient.getSession()
-            .then(({ data, error: sessionError }) => {
-                if (!isCurrent) return;
-                if (sessionError) {
-                    setError(sessionError.message ?? 'Unable to load your session.');
-                } else {
-                    setUser(data?.user ?? null);
-                }
-            })
-            .catch((cause: unknown) => {
-                if (isCurrent) {
-                    setError(cause instanceof Error ? cause.message : 'Unable to load your session.');
-                }
-            })
-            .finally(() => {
-                if (isCurrent) setIsLoading(false);
-            });
-
-        return () => {
-            isCurrent = false;
-        };
+        authClient.getSession().then((result) => {
+        if (result.data?.session && result.data?.user) {
+            setSession(result.data.session);
+            setUser(result.data.user);
+            console.log('REDIRECTING to /home');
+            router.replace('/(tabs)/home');
+        }
+        setIsLoading(false);
+        });
     }, []);
 
     const handleSubmit = async () => {
         setError(null);
         setIsSubmitting(true);
-
-        try {
-            const normalizedEmail = email.trim();
+        try{
             const result = isSignUp
-                ? await authClient.signUp.email({
-                    name: normalizedEmail.split('@')[0] || 'User',
-                    email: normalizedEmail,
-                    password,
-                })
-                : await authClient.signIn.email({ email: normalizedEmail, password });
-
+            ? await authClient.signUp.email({ name: email.split('@')[0] || 'User', email, password, callbackURL: CALLBACK})
+            : await authClient.signIn.email({ email, password, callbackURL: CALLBACK});
             if (result.error) {
                 setError(result.error.message ?? 'Authentication failed.');
                 return;
             }
-
-            const sessionResult = await authClient.getSession();
-            if (sessionResult.error) {
-                setError(sessionResult.error.message ?? 'Unable to read the current session.');
-                return;
-            }
-            if (!sessionResult.data?.user) {
-                setError('Authentication succeeded, but no signed-in user was returned.');
-                return;
-            }
-
-            setUser(sessionResult.data.user);
-            setPassword('');
-        } catch (cause) {
+            await refresh();
+        } catch (cause){
             setError(cause instanceof Error ? cause.message : 'Authentication failed.');
         } finally {
             setIsSubmitting(false);
         }
+        
     };
 
     const handleSignOut = async () => {
-        setError(null);
-        setIsSubmitting(true);
-
-        try {
-            const result = await authClient.signOut();
-            if (result.error) {
-                setError(result.error.message ?? 'Unable to sign out.');
-                return;
-            }
-            setUser(null);
-        } catch (cause) {
-            setError(cause instanceof Error ? cause.message : 'Unable to sign out.');
-        } finally {
-            setIsSubmitting(false);
-        }
+        await authClient.signOut();
+        setSession(null);
+        setUser(null);
+        await refresh();
     };
 
     return (

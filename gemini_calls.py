@@ -2,15 +2,25 @@ import json
 
 from dotenv import load_dotenv
 from google import genai
+from datetime import date, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
+ET = ZoneInfo("America/New_York")
 
 from database_access import add_new_cycle, pull_data, add_daily_insight, get_current_date
 load_dotenv()
 
 client = genai.Client()
-def predict_next_cycles(rows, predicted):
+def predict_next_cycles(rows, predicted, user_id):
+    today = get_current_date()
+    last_end = max((r["end_date"] for r in rows), default=today)
     interaction = client.interactions.create(
                 model="gemini-3.8-flash",
-                input="Predict the next " + str(predicted) + " cycles using this data: " + str(rows),
+                input=(
+                    f"Today is {today}. Predict the next {predicted} menstrual cycles using this "
+                    f"history: {rows}. Each predicted cycle must start after {last_end} and no "
+                    f"earlier than {today}, and use the typical cycle and period length shown in the history."
+                ),
                 response_format={
                     "type": "text",
                     "mime_type": "application/json",
@@ -39,17 +49,13 @@ def predict_next_cycles(rows, predicted):
     payload = json.loads(interaction.output_text)
 
     for cycle in payload["cycles"]:
-        cycle_row = [
-            cycle["start_date"],
-            cycle["end_date"],
-            cycle["current"],
-            cycle["predicted"],
-            cycle["created_at"],
-            ]
-        add_new_cycle(*cycle_row)
-    rows = pull_data()
-    return rows
-def predict_daily_insights(rows):
+        start = date.fromisoformat(cycle["start_date"])
+        end = date.fromisoformat(cycle["end_date"])
+        if start <= last_end or start < today or end < start:
+            continue
+        add_new_cycle(cycle["start_date"], cycle["end_date"], False, True, None, user_id)
+    return pull_data(user_id)
+def predict_daily_insights(rows, user_id):
     insight_date = get_current_date()
     interaction = client.interactions.create(
                 model="gemini-3.8-flash",
@@ -94,7 +100,9 @@ def predict_daily_insights(rows):
     insight = daily_insight["insight"]
     add_daily_insight(
         phase=insight["phase"],
+        user_id= user_id,
         symptom=insight["symptoms"],
         Tips=insight["tips"],
     )
     return "success"
+

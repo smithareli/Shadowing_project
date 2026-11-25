@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 export type Cycle = {
     start_date:string;
@@ -17,6 +18,7 @@ export function expandRange(start: string, end: string): string[] {
   return days;
 }
 export function useCycleEdit(cycles: Cycle[], backendUrl: string, onSaved: (cycles: Cycle[]) => void) {
+    const { userId }= useAuth(); 
     const [editMode, setEditMode] = useState(false);
     const [draft, setDraft] = useState<Set<string>>(new Set());
     const [isSaving, setIsSaving] = useState(false);
@@ -36,12 +38,12 @@ export function useCycleEdit(cycles: Cycle[], backendUrl: string, onSaved: (cycl
     };
     const cancel = () => setEditMode(false);
     const save = async () => {
-        if(draft.size === 0) return;
+        if(draft.size === 0 || !userId) return;
         setIsSaving(true);
         try {
            const res = await fetch(`${backendUrl}/current-cycle`, { 
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-User-Id': userId  },
             body: JSON.stringify({ dates: [...draft] }),
            });
            if(!res.ok) throw new Error(`HTTP ${res.status}`);
