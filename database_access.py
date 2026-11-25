@@ -149,19 +149,20 @@ def get_group(user_id):
 
 def get_pending_recommendations(user_id):
     with get_cursor() as cur:
-        cur.execute("SELECT r.id, r.task_id, r.reason," \
-        "r.start_date, r.end_date, r.start_time, r.end_time," \
-        "t.name AS task_name" \
-        "FROM recommendation r" \
-        "JOIN recommendation_group g ON g.id = r.group_id" \
-        "JOIN task t ON t.id = r.task_id AND t.userid = r.userid" \
-        "WHERE g.userid = %s" \
-        "AND g.for_date = (NOW() AT TIME ZONE 'America/New_York')::date" \
-        "AND r.status = 'pending'" \
-        "AND t.done = false" \
-        "ORDER BY r.start_time;", (user_id, user_id))
+        cur.execute("""
+            SELECT r.id, r.task_id, r.reason,
+                   r.start_date, r.end_date, r.start_time, r.end_time,
+                   t.name AS task_name
+            FROM recommendation r
+            JOIN recommendation_group g ON g.id = r.group_id
+            JOIN task t ON t.id = r.task_id AND t.userid = r.userid
+            WHERE g.userid = %s
+              AND g.for_date = (NOW() AT TIME ZONE 'America/New_York')::date
+              AND r.status = 'pending'
+              AND t.done = false
+            ORDER BY r.start_time;
+        """, (user_id,))
         return cur.fetchall()
-
 
 def save_group(user_id, fingerprint, recs):
     with get_cursor() as cur:
