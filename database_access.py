@@ -114,7 +114,17 @@ def get_tasks(user_id):
         return cur.fetchall()
 def task_for_recs(user_id):
     with get_cursor() as cur:
-        cur.execute(""" SELECT * FROM task WHERE done=false AND userid=%s;""", (user_id,))
+        cur.execute("""
+            SELECT id, name, start_time, end_time
+            FROM task
+            WHERE userid = %s
+              AND done = false
+              AND source IS DISTINCT FROM 'google'
+              AND start_time IS NOT NULL AND end_time IS NOT NULL
+              AND end_date >= (NOW() AT TIME ZONE 'America/New_York')::date - 7
+            ORDER BY start_time
+            LIMIT 30;
+        """, (user_id,))
         return cur.fetchall()
 def set_task_done(task_id, done, user_id):
     with get_cursor() as cur:
@@ -131,3 +141,58 @@ def get_goals(user_id):
         row=cur.fetchone()
         g = (row["goals"] if row and row["goals"] else [None] * 4)
         return {"productivity": g[0], "fitness": g[1], "energy": g[2], "learning": g[3]}
+
+def get_group(user_id):
+    with get_cursor() as cur:
+        cur.execute("SELECT * FROM recommendation_group WHERE userid=%s AND for_date = (NOW() AT TIME ZONE 'America/New_York')::date;", (user_id,))
+        return cur.fetchone()
+
+def get_pending_recommendations(user_id):
+    with get_cursor() as cur:
+        cur.execute("SELECT r.id, r.task_id, r.reason," \
+        "r.start_date, r.end_date, r.start_time, r.end_time," \
+        "t.name AS task_name" \
+        "FROM recommendation r" \
+        "JOIN recommendation_group g ON g.id = r.group_id" \
+        "JOIN task t ON t.id = r.task_id AND t.userid = r.userid" \
+        "WHERE g.userid = %s" \
+        "AND g.for_date = (NOW() AT TIME ZONE 'America/New_York')::date" \
+        "AND r.status = 'pending'" \
+        "AND t.done = false" \
+        "ORDER BY r.start_time;", (user_id, user_id))
+        return cur.fetchall()
+
+
+def save_group(user_id, fingerprint, recs):
+    with get_cursor() as cur:
+        # create today's group, or update it if one exists (UNIQUE (userid, for_date))
+        cur.execute("""
+            INSERT INTO recommendation_group (userid, for_date, fingerprint)
+            VALUES (%s, (NOW() AT TIME ZONE 'America/New_York')::date, %s)
+            ON CONFLICT (userid, for_date)
+            DO UPDATE SET fingerprint = EXCLUDED.fingerprint, generated_at = now()
+            RETURNING id;
+        """, (user_id, fingerprint))
+        group_id = cur.fetchone()["id"]
+
+        # clear the old recommendations for this group, then insert the new ones
+        cur.execute("DELETE FROM recommendation WHERE group_id = %s;", (group_id,))
+        for r in recs:
+            cur.execute("""
+                INSERT INTO recommendation
+                  (group_id, task_id, userid, reason,
+                   start_date, end_date, start_time, end_time)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+            """, (group_id, r["task_id"], user_id, r["reason"],
+                  r["start_date"], r["end_date"], r["start_time"], r["end_time"]))
+        return group_id
+
+def todays_task_ids(user_id):
+    with get_cursor() as cur:
+        cur.execute("""
+            SELECT id FROM task
+            WHERE userid = %s
+              AND start_date <= (NOW() AT TIME ZONE 'America/New_York')::date
+              AND end_date   >= (NOW() AT TIME ZONE 'America/New_York')::date;
+        """, (user_id,))
+        return [row["id"] for row in cur.fetchall()]

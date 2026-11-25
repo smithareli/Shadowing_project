@@ -3,6 +3,9 @@ import json
 from dotenv import load_dotenv
 from google import genai
 from datetime import date, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
+ET = ZoneInfo("America/New_York")
 
 from database_access import add_new_cycle, pull_data, add_daily_insight, get_current_date
 load_dotenv()
@@ -102,3 +105,4 @@ def predict_daily_insights(rows, user_id):
         Tips=insight["tips"],
     )
     return "success"
+

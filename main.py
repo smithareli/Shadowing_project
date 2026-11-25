@@ -6,12 +6,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, model_validator
 from database_access import (
     pull_data, pull_history, check_cycle, check_daily_insight, get_daily_insight,
-    replace_current_cycle, delete_todays_insight, get_tasks, add_task, get_goals, add_goals, set_task_done
+    replace_current_cycle, delete_todays_insight, get_tasks, add_task, get_goals, add_goals, set_task_done, get_pending_recommendations
 )
 from gemini_calls import predict_next_cycles, predict_daily_insights
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from calendar_access import get_calendar_events
+from recommendations import ensure_recommendations
+
 
 import os
 import psycopg2
@@ -40,11 +42,13 @@ def build_response(user_id):
         predict_daily_insights(cycles, user_id)
 
     insights = get_daily_insight(user_id)
+    ensure_recommendations(user_id)
     tasks = get_tasks(user_id)
-    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None, "tasks": tasks}
+    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None, "tasks": tasks, "recommendations": get_pending_recommendations(user_id),}
 
 class CurrentCycleIn(BaseModel):
     dates: list[date]
+    
 
 def current_user_id(x_user_id: str=Header(None)):
     if not x_user_id:
