@@ -44,7 +44,7 @@ def build_response(user_id):
     insights = get_daily_insight(user_id)
     ensure_recommendations(user_id)
     tasks = get_tasks(user_id)
-    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None, "tasks": tasks, "recommendations": get_pending_recommendations(user_id),}
+    return {"cycles": cycles, "phase": insights[0]["phase"] if insights else None,"tips": insights[0]["tips"] if insights else None, "symptoms": insights[0]["symptoms"] if insights else None, "tasks": tasks, "recommendations": get_pending_recommendations(user_id),}
 
 class CurrentCycleIn(BaseModel):
     dates: list[date]
